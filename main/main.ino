@@ -24,7 +24,7 @@ void setupColourSensor(){
     Serial.println("Found colour sensor!");
   } else {
     Serial.println("The colour sensor was not found...");
-    while (1); // pause
+    // while (1); // pause
   }
 
   // Set pin outputs
@@ -50,7 +50,7 @@ void runColourSensor(){
   uint16_t clear, red, green, blue, colourTemp, lux;
 
   colourSensor.setInterrupt(false);                       // turn on LED
-  delay(60);                                              // wait 60 ms for reading input
+  delay(1000);                                            // wait 1000 ms for reading input
   colourSensor.getRawData(&red, &green, &blue, &clear);   // read sensor input
 
   colourSensor.setInterrupt(true);                        // turn off LED
