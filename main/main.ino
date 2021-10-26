@@ -2,6 +2,7 @@
 #include <Wire.h>               // I2C library
 #include "Adafruit_TCS34725.h"  // colour sensor library
 
+// --- Colour Sensor Defs ---
 // Pins
 /*NOTE: that the pin vals here are arbitrary - go with whatever electrical needs*/
 #define redPin 3              // PWM output for red anode
@@ -10,15 +11,14 @@
 
 #define commonAnode false     // using a common cathode LED
 
-byte gammeTable[256];         // RGB gamma colour
+byte gammaTable[256];         // RGB gamma colour
 
 /*NOTE: In the future, initialize 2 colourSensor vars (left and right side)*/
 Adafruit_TCS34725 colourSensor = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
-void setup() {
-  Serial.begin(9600);         // [bits/s] Communication data rate between Arduino and Serial Monitor
-  Serial.println("Colour Sensor Test");
+// --- End of Colour Sensor -- 
 
+void setupColourSensor(){
   if (colourSensor.begin()){
     // If the sensor starts up correctly
     Serial.println("Found colour sensor!");
@@ -44,9 +44,9 @@ void setup() {
       gammaTable[i] = x;
     }
   }
-}
+ }
 
-void loop(void) {
+void runColourSensor(){
   uint16_t clear, red, green, blue, colourTemp, lux;
 
   colourSensor.setInterrupt(false);                       // turn on LED
@@ -64,4 +64,15 @@ void loop(void) {
   Serial.print(green);
   Serial.print("\tB:\t");
   Serial.print(blue);
+}
+
+void setup() {
+  Serial.begin(9600);                       // [bits/s] Communication data rate between Arduino and Serial Monitor
+  Serial.println("Colour Sensor Test");
+  setupColourSensor();
+}
+
+void loop(void) {
+  Serial.println("\tRun colour sensor\t");
+  runColourSensor();
 }
