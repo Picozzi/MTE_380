@@ -1,6 +1,7 @@
 // Libraries
 #include <Wire.h>               // I2C library
 #include "Adafruit_TCS34725.h"  // colour sensor library
+#include <PID_v1.h>             // PID controller library
 
 // --- Colour Sensor Defs ---
 // Pins
@@ -16,7 +17,10 @@ byte gammaTable[256];         // RGB gamma colour
 /*NOTE: In the future, initialize 2 colourSensor vars (left and right side)*/
 Adafruit_TCS34725 colourSensor = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
-// --- End of Colour Sensor -- 
+//// --- PID Controller Defs ---
+//double Setpoint, Input, Output;
+//PID myPID(&Input, &Output, &Setpoint, 2, 5, 1, DIRECT);
+
 
 void setupColourSensor(){
   if (colourSensor.begin()){
@@ -68,11 +72,27 @@ void runColourSensor(){
 
 void setup() {
   Serial.begin(9600);                       // [bits/s] Communication data rate between Arduino and Serial Monitor
+
+  // Colour sensor
   Serial.println("Colour Sensor Test");
   setupColourSensor();
+
+//  // PID controller
+//  //initialize the variables we're linked to
+//  Input = analogRead(0);
+//  Setpoint = 100;
+//
+//  myPID.SetMode(AUTOMATIC);   // turn PID on
+
 }
 
 void loop(void) {
+  // Colour sensor
   Serial.println("\tRun colour sensor\t");
   runColourSensor();
+
+//  // PID controller
+//  Input = analogRead(0);
+//  myPID.Compute();
+//  analogWrite(3,Output);
 }
