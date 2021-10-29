@@ -18,8 +18,16 @@ byte gammaTable[256];         // RGB gamma colour
 Adafruit_TCS34725 colourSensor = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
 //// --- PID Controller Defs ---
+//#define inputPin_PID 0        // PID input
+//#define outputPin_PID 3       // PID output
+
 //double Setpoint, Input, Output;
-//PID myPID(&Input, &Output, &Setpoint, 2, 5, 1, DIRECT);
+
+// NOTE: Apparantly these constants are the ones to be tuned
+//double Kp = 2;
+//double Ki = 5;
+//double Kd = 1;
+//PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 
 void setupColourSensor(){
@@ -78,12 +86,11 @@ void setup() {
   setupColourSensor();
 
 //  // PID controller
-//  //initialize the variables we're linked to
-//  Input = analogRead(0);
+//  Input = analogRead(inputPin_PID);       // set-up PID
 //  Setpoint = 100;
 //
-//  myPID.SetMode(AUTOMATIC);   // turn PID on
-
+//  myPID.SetMode(AUTOMATIC);               // turn PID on
+//  myPID.SetTunings(Kp, Ki, Kd);
 }
 
 void loop(void) {
@@ -92,7 +99,11 @@ void loop(void) {
   runColourSensor();
 
 //  // PID controller
-//  Input = analogRead(0);
-//  myPID.Compute();
-//  analogWrite(3,Output);
+//  Input = analogRead(inputPin_PID);
+//  myPID.Compute();                        // PID calculation
+//  analogWrite(outputPin_PID, Output);
+
+//  Serial.print(Input);
+//  Serial.print(" ");
+//  Serial.println(Output);
 }
