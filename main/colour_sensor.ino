@@ -43,30 +43,32 @@
  * 
  */
 String identifyColour(Adafruit_TCS34725 colourSensor){ 
-  delay(500);
+  delay(2000);
   
   // Get readings from given sensor
   uint16_t r, g, b, clear, lux;
   colourSensor.getRawData(&r, &g, &b, &clear);
 //  colourTemp = colourSensor.calculateColorTemperature_dn40(r, g, b, clear);
   lux = colourSensor.calculateLux(r, g, b);
-
-  delay(50);    
+  
   printColourInfo(r, g, b, clear, lux);
 
+  delay(50);    
   // Determine colour being read
   // +/- 3 of the vals we got on 11/08/2021
-  if ((r <= 182 && r >= 176) && (g <= 37 && g >= 43) && (b <= 35 && b >= 41)){
+  if (r <= 182 && r >= 176){
     Serial.println("Current colour: RED");
     return "red";
   } 
-  else if ((r <= 37 && r >= 31) && (g <= 85 && g >= 79) && (b <= 133 && b >= 127)){
+  else if (b <= 133 && b >= 127){
     Serial.println("Current colour: BLUE");
     return "blue";
   } 
-  else if ((r <= 55 && r >= 49) && (g <= 118 && g >= 112) && (b <= 75 && b >= 69)){
+  else if (g <= 118 && g >= 112){
     Serial.println("Current colour: GREEN");
     return "green";
+  } else {
+    printColourInfo(r, g, b, clear, lux);
   }
   
   return "none";
@@ -74,7 +76,7 @@ String identifyColour(Adafruit_TCS34725 colourSensor){
 
 void printColourInfo(uint16_t r, uint16_t g, uint16_t b, uint16_t clear, uint16_t lux){
   // Print read colour sensor values
-  Serial.print("C: ");
+  Serial.print("\nC: ");
   Serial.print(clear);
   Serial.print("\tR: ");
   Serial.print(r);

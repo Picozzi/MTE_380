@@ -3,22 +3,53 @@ void setupMotors(){
 }
 
 void runMotors(){
-//  motors.forward();                            // Drive both motors forward
-  motors.forwardA();                           // Drive motor A forward
+  delay(2000);
+  motors.setSpeed(255);
+
+  /* Move forwards */
+  // TESTING: One motor
+//  motors.setSpeedA(255);
+//  motors.forwardA();                            // Drive both motors forward
+
+//  // Both motors 
+  motors.forward();                           // Drive motor A forward
+  Serial.println("Drive forward.");
   testingInfo();
 
-  delay(3000);
-  motors.stopA();
+  /* Move backwards */
+  // TESTING: One motor
+//  motors.setSpeedA(200);
+//  motors.backwardA();
+  
+//  // Both motors 
+  motors.backward();
+  Serial.println("Drive backward.");
   testingInfo();
 
-  motors.setSpeedA(255);
-  motors.backwardA();
-  testingInfo();
+  // NOTE: deaccelerate b/w changing directions
+  /* Turn around */
+//  delay(2000);
+//  // Motor A: increase speed
+//  motors.setSpeedA(255);
+//
+//  // Motor B: decrease speed
+//  motors.setSpeedB(127);
+//
+//  motors.forward();
+//  testingInfo();
 
-  delay(3000);
-  motors.forwardA();
-  testingInfo();
+  /* End */
+  // TESTING: One motor
+//  motors.stopA();
+//  delay(5000);
+//  testingInfo();
+//  Serial.println("Motors stopped.\n");
+
+  
+//  // Both motors
+//  motors.stop();
 }
+
 
 /*
  * TESTING: Print some informations in Serial Monitor
