@@ -13,7 +13,7 @@
 
 #define commonAnode false         // for using a common cathode LED
 
-byte gammaTable[256];             // RGB gamma colour
+//byte gammaTable[256];             // RGB gamma colour
 
 /*NOTE: In the future, initialize 2 colourSensor vars (left and right side)*/
 Adafruit_TCS34725 colourSensor = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
@@ -25,13 +25,20 @@ Adafruit_TCS34725 colourSensor = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS
 SharpIR SharpIR(irPin, irModel); // Unsure if I can/it's better to assign a var to this object
 
 /* --- Motor Controller Defs --- */
-/* NOTE: May name motorA as motor right instead later */
-#define EN_A 9                // PWM signal for controlling speed Motor A
-#define EN_B 10               // PWM signal for controlling speed Motor B
-#define IN1_A 7               // Digital input pin to control spin direction of Motor A
-#define IN2_A 8               // Digital input pin to control spin direction of Motor A
-//#define IN1_B 7               // Digital input pin to control spin direction of Motor A
-//#define IN2_B 7               // Digital input pin to control spin direction of Motor A
+/* NOTE: May name motorA as motorRight instead later */
+#define enablePinA 6                // PWM signal for controlling speed Motor A
+#define inPin1A 7                   // Digital input pin to control spin direction of Motor A
+#define inPin2A 8                   // Digital input pin to control spin direction of Motor A
+
+#define enablePinB 11               // PWM signal for controlling speed Motor B
+#define inPin1B 10                  // Digital input pin to control spin direction of Motor B
+#define inPin2B 12                  // Digital input pin to control spin direction of Motor B
+
+#define initialMotorSpeed 80        // Initial motor speed
+
+// 
+L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B);
+
 // HERE***********
 
 /* --- PID Controller Defs --- */
