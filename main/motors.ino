@@ -1,16 +1,29 @@
 void setupMotors(){
-    motors.setSpeed(initialMotorSpeed);        // Set initial speed for both motors
+    motors.setSpeed(standardMotorSpeed);        // Set initial speed for both motors
 }
 
 void runMotors(){
-  motors.forward();                            // Drive both motors forward
-  printSomeInfo();
+//  motors.forward();                            // Drive both motors forward
+  motors.forwardA();                           // Drive motor A forward
+  testingInfo();
+
+  delay(3000);
+  motors.stopA();
+  testingInfo();
+
+  motors.setSpeedA(255);
+  motors.backwardA();
+  testingInfo();
+
+  delay(3000);
+  motors.forwardA();
+  testingInfo();
 }
 
 /*
  * TESTING: Print some informations in Serial Monitor
 */
-void printSomeInfo()
+void testingInfo()
 {
   Serial.print("Motor A is moving = ");
   Serial.print(motors.isMovingA() ? "YES" : "NO");

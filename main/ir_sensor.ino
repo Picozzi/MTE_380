@@ -12,25 +12,20 @@ void testingIR(){
   Serial.print("IR Distance:\t");
   Serial.print(irDistance);
 
-  int myDist = 4.3457*irDistance - 1.3399;
+  int myDist = 0.3129*SharpIR.distance()+2.24489;
   Serial.print("\nMy IR Distance:\t");
   Serial.print(myDist);
   
 }
 
-void runIRSensor(){
+int32_t getIRDistance(){
   /*NOTE: Can ommit/comment out the code relating to acknowledging time - for testing*/
   delay(1000);
   
   unsigned long startTime = millis();
-  int irDistance = 0.3129*SharpIR.distance()+2.2448;      // returns measured distance of surroundings
+  int32_t irDistance = 0.3129*SharpIR.distance()+2.2448;      // returns measured distance of surroundings
   Serial.print("New IR Distance:\t");
   Serial.print(irDistance);
-  
-
-//  int myDist = 4.3457*irDistance - 1.3399;
-//  Serial.print("\nMy IR Distance:\t");
-//  Serial.print(myDist);
 
   unsigned long elapsedTime = millis() - startTime;
   Serial.print("\nTime elapsed for IR reading [ms]:\t");
@@ -51,5 +46,5 @@ void runIRSensor(){
 //  display.write("cm");
 //
 //  delay(2000);
-
+  return irDistance;
 }

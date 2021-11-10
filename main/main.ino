@@ -7,20 +7,22 @@
 
 /* --- Colour Sensor Defs --- */
 /*NOTE: that the pin vals here are arbitrary - go with whatever electrical needs*/
-//#define redPin 3                // PWM output pin
-//#define greenPin 5              // PWM output pin
-//#define bluePin 6               // PWM output pin
+//#define redPin 2                // Digital pin
+//#define greenPin 3              // PWM pin (doesn't have to be PWM)
+//#define bluePin 4               // Digital pin
 
-#define commonAnode false         // for using a common cathode LED
+//#define commonAnode false         // for using a common cathode LED
 
 //byte gammaTable[256];             // RGB gamma colour
 
 /*NOTE: In the future, initialize 2 colourSensor vars (left and right side)*/
-Adafruit_TCS34725 colourSensor = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+Adafruit_TCS34725 colourSensor1 = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+Adafruit_TCS34725 colourSensor2 = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
 /* --- IR Proximity Sensor Defs --- */
 #define irPin A0                  // Analog input pin
 #define irModel 1080              // sensor model library uses for GP2Y0A21YK
+#define irLegoThreshold 5         // ***CHANGE THROUGH TESTING; distance threshold to find the Lego man
 
 SharpIR SharpIR(irPin, irModel); // Unsure if I can/it's better to assign a var to this object
 
@@ -34,7 +36,7 @@ SharpIR SharpIR(irPin, irModel); // Unsure if I can/it's better to assign a var 
 #define inPin1B 10                  // Digital input pin to control spin direction of Motor B
 #define inPin2B 12                  // Digital input pin to control spin direction of Motor B
 
-#define initialMotorSpeed 80        // Initial motor speed
+#define standardMotorSpeed 200      // Standard motor driving speed
 
 // 
 L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B);
@@ -70,15 +72,27 @@ void setup() {
 }
 
 void loop(void) {
-  // Colour sensor
-//  Serial.println("\nRun colour sensor\t");
-//  runColourSensor();
+  // --- Colour sensor ---
+  // Read sensor 1
+  Serial.println("\nColour Sensor");
+  String currentColour1 = identifyColour(colourSensor1);
+  
+//  // IR sensor
+  Serial.println("\nIR Sensor");
+  int32_t currIRDist = getIRDistance();
 
-  // IR sensor
-  Serial.println("IR Sensor Testing");
-  Serial.println("Test IR sensor");
-//  testingIR();
-  runIRSensor();
+  if (currentColour1 == "blue" && currIRDist >= irLegoThreshold){
+      // Keep driving
+      runMotors();
+  }
+  else {
+    // Found target circle (Lego man)
+    // claws to pick up Lego man
+  }
+
+//  // Motors
+//  Serial.println("Motors Testing");
+//  runMotors();
 
 //  // PID controller
 //  Input = analogRead(inputPin_PID);
