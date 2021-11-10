@@ -18,13 +18,16 @@ void testingIR(){
   
 }
 
-int32_t getIRDistance(){
+/*
+ * 
+ */
+unsigned long getIRDistance(){
   /*NOTE: Can ommit/comment out the code relating to acknowledging time - for testing*/
   delay(1000);
   
   unsigned long startTime = millis();
-  int32_t irDistance = 0.3129*SharpIR.distance()+2.2448;      // returns measured distance of surroundings
-  Serial.print("New IR Distance:\t");
+  unsigned long irDistance = 0.3129*SharpIR.distance()+2.2448;      // returns measured distance of surroundings [cm]
+  Serial.print("Improved IR Distance [cm]:\t");
   Serial.print(irDistance);
 
   unsigned long elapsedTime = millis() - startTime;

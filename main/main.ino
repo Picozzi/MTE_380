@@ -58,11 +58,7 @@ L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B);
 
 void setup() {
   Serial.begin(9600);                       // [bits/s] Communication data rate between Arduino and Serial Monitor
-
-  // Colour sensor
-//  Serial.println("Colour Sensor Testing");
-//  setupColourSensor();
-
+  
 //  // PID controller
 //  Input = analogRead(inputPin_PID);       // set-up PID
 //  Setpoint = 100;
@@ -77,9 +73,9 @@ void loop(void) {
   Serial.println("\nColour Sensor");
   String currentColour1 = identifyColour(colourSensor1);
   
-//  // IR sensor
+  // --- IR sensor ---
   Serial.println("\nIR Sensor");
-  int32_t currIRDist = getIRDistance();
+  unsigned long currIRDist = getIRDistance();
 
   if (currentColour1 == "blue" && currIRDist >= irLegoThreshold){
       // Keep driving
