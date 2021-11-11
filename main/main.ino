@@ -23,6 +23,7 @@ Adafruit_TCS34725 colourSensor1 = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50M
 #define irPin A0                  // Analog input pin
 #define irModel 1080              // sensor model library uses for GP2Y0A21YK
 #define irLegoThreshold 5         // ***CHANGE THROUGH TESTING; distance threshold to find the Lego man
+// 5 V
 
 SharpIR SharpIR(irPin, irModel); // Unsure if I can/it's better to assign a var to this object
 
@@ -32,11 +33,12 @@ SharpIR SharpIR(irPin, irModel); // Unsure if I can/it's better to assign a var 
 #define inPin1A 7                   // Digital input pin to control spin direction of Motor A
 #define inPin2A 8                   // Digital input pin to control spin direction of Motor A
 
+#define inPin1B 9                  // Digital input pin to control spin direction of Motor B
+#define inPin2B 10                  // Digital input pin to control spin direction of Motor B
 #define enablePinB 11               // PWM signal for controlling speed Motor B
-#define inPin1B 12                  // Digital input pin to control spin direction of Motor B
-#define inPin2B 13                  // Digital input pin to control spin direction of Motor B
 
-#define standardMotorSpeed 220      // Standard motor driving speed
+#define standardMotorSpeed 100      // Standard motor driving speed
+// motor A: left - bad (offset by 70)
 
 // 
 L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B);
@@ -59,15 +61,16 @@ L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B);
 void setup() {
   Serial.begin(9600);                       // [bits/s] Communication data rate between Arduino and Serial Monitor
 
-  if (colourSensor1.begin()){
-    // If the sensor starts up correctly
-    Serial.println("Found colour sensor!");
-  } else {
-    Serial.println("The colour sensor was not found...");
-    // while (1); // pause
-  }
-  
+//  if (colourSensor1.begin()){
+//    // If the sensor starts up correctly
+//    Serial.println("Found colour sensor!");
+//  } else {
+//    Serial.println("The colour sensor was not found...");
+//    // while (1); // pause
+//  }
+//  
   setupMotors();
+  
 //  // PID controller
 //  Input = analogRead(inputPin_PID);       // set-up PID
 //  Setpoint = 100;
@@ -79,12 +82,16 @@ void setup() {
 void loop(void) {
   // --- Colour sensor ---
   // Read sensor 1
-  Serial.println("\nColour Sensor");
-  String currentColour1 = identifyColour(colourSensor1);
+//  Serial.println("\nColour Sensor");
+//  String currentColour1 = identifyColour(colourSensor1);
+  // Testing
+//  stopAtRed(colourSensor1);
+//  stopAtBlue(colourSensor1);
   
   // --- IR sensor ---
 //  Serial.println("\nIR Sensor");
 //  unsigned long currIRDist = getIRDistance();
+  testingIR();
 
   // ALGORITHM
 //  if (currentColour1 == "blue" && currIRDist >= irLegoThreshold){

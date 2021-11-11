@@ -8,14 +8,18 @@
 */
 
 void testingIR(){
-  int irDistance = SharpIR.distance();      // returns measured distance of surroundings
-  Serial.print("IR Distance:\t");
-  Serial.print(irDistance);
-
+  runMotors();
+  
   int myDist = 0.3129*SharpIR.distance()+2.24489;
   Serial.print("\nMy IR Distance:\t");
   Serial.print(myDist);
-  
+
+  if (myDist < 10){ // at night 11/10/2021 8:07 PM
+    Serial.println("\nREACHED THRESHOLD");
+    motors.stop();
+    while(1){}
+    // NOTE: WHEELS KEEP GOING FOR ~0.5 S AFTER .STOP()
+  } 
 }
 
 /*

@@ -38,25 +38,59 @@
  * NOTE: Black and white slight sketch
  */
 
+void stopAtRed(Adafruit_TCS34725 colourSensor){
+  runMotors();
+  
+  uint16_t r, g, b, clear, lux;
+  colourSensor.getRawData(&r, &g, &b, &clear);
+  lux = colourSensor.calculateLux(r, g, b);
+  
+//  delay(2000);
+  printColourInfo(r, g, b, clear, lux);
+  if (r >= 700){ // at night 11/10/2021 7:54 PM
+    Serial.println("\nFOUND RED. STOP");
+    motors.stop();
+    while(1){}
+    // NOTE: WHEELS KEEP GOING FOR ~0.5 S AFTER .STOP()
+  } 
+}
+
+void stopAtBlue(Adafruit_TCS34725 colourSensor){
+  runMotors();
+  
+  uint16_t r, g, b, clear, lux;
+  colourSensor.getRawData(&r, &g, &b, &clear);
+  lux = colourSensor.calculateLux(r, g, b);
+  
+//  delay(2000);
+  printColourInfo(r, g, b, clear, lux);
+//  delay(2000);
+  if (b >= 400){ // at night 11/10/2021 8:07 PM
+    Serial.println("\nFOUND BLUE. STOP");
+    motors.stop();
+    while(1){}
+    // NOTE: WHEELS KEEP GOING FOR ~0.5 S AFTER .STOP()
+  } 
+}
+
 
 /*
  * 
  */
-String identifyColour(Adafruit_TCS34725 colourSensor){ 
-  delay(2000);
-  
+String identifyColour(Adafruit_TCS34725 colourSensor){   
   // Get readings from given sensor
   uint16_t r, g, b, clear, lux;
   colourSensor.getRawData(&r, &g, &b, &clear);
 //  colourTemp = colourSensor.calculateColorTemperature_dn40(r, g, b, clear);
   lux = colourSensor.calculateLux(r, g, b);
-  
+
+  delay(2000);
   printColourInfo(r, g, b, clear, lux);
 
-  delay(50);    
+//  delay(50);    
   // Determine colour being read
   // +/- 3 of the vals we got on 11/08/2021
-  if (r <= 182 && r >= 176){
+  if (r >= 600){
     Serial.println("Current colour: RED");
     return "red";
   } 
