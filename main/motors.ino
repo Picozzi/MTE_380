@@ -2,6 +2,56 @@ void setupMotors(){
     motors.setSpeed(standardMotorSpeed);        // Set initial speed for both motors
 }
 
+// TESTING
+void turnLeft(){
+  // Both motors 
+  motors.forward();
+  motors.setSpeedA(120);
+  motors.backward();
+   
+//  Serial.println("Drive forward.");
+//  testingInfo();
+
+  /* Move backwards */
+  // TESTING: One motor
+//  motors.setSpeedA(200);
+//  motors.backwardA();
+  
+//  // Both motors 
+//  motors.backward();
+//  delay(2000);
+
+//  Serial.println("Drive backward.");
+//  testingInfo();
+
+  // NOTE: deaccelerate b/w changing directions
+  /* Turn around */
+//  // Turn left
+//  // Motor A: increase speed
+//  motors.setSpeedA(220);
+//
+//  // Motor B: decrease speed
+//  motors.setSpeedB(200);
+//  delay(2000);
+//
+//  motors.setSpeed(255);
+//  motors.forward();
+//  testingInfo();
+
+  /* End */
+  // TESTING: One motor
+//  motors.stopA();
+//  delay(5000);
+//  testingInfo();
+//  Serial.println("Motors stopped.\n");
+
+  
+  // Both motors
+//  delay(5000);
+//  motors.stop();
+}
+
+
 void runMotors(){
 //  delay(2000);
 //  motors.setSpeed(255);

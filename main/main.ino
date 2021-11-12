@@ -4,6 +4,7 @@
 #include <PID_v1.h>             // PID controller library
 #include <SharpIR.h>            // IR proximity sensor library
 #include <L298NX2.h>            // Motor drive controller library (powers 2 motors)
+#include <Servo.h>              // Servo motor library
 
 /* --- Colour Sensor Defs --- */
 /*NOTE: that the pin vals here are arbitrary - go with whatever electrical needs*/
@@ -16,8 +17,7 @@
 //byte gammaTable[256];             // RGB gamma colour
 
 /*NOTE: In the future, initialize 2 colourSensor vars (left and right side)*/
-Adafruit_TCS34725 colourSensor1 = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
-//Adafruit_TCS34725 colourSensor2 = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+Adafruit_TCS34725 colourSensor = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
 /* --- IR Proximity Sensor Defs --- */
 #define irPin A0                  // Analog input pin
@@ -29,15 +29,15 @@ SharpIR SharpIR(irPin, irModel); // Unsure if I can/it's better to assign a var 
 
 /* --- Motor Controller Defs --- */
 /* NOTE: May name motorA as motorRight instead later */
-#define enablePinA 6                // PWM signal for controlling speed Motor A
-#define inPin1A 7                   // Digital input pin to control spin direction of Motor A
-#define inPin2A 8                   // Digital input pin to control spin direction of Motor A
+#define enablePinA 3                // PWM signal for controlling speed Motor A
+#define inPin1A 4                   // Digital input pin to control spin direction of Motor A
+#define inPin2A 5                   // Digital input pin to control spin direction of Motor A
 
-#define inPin1B 9                  // Digital input pin to control spin direction of Motor B
-#define inPin2B 10                  // Digital input pin to control spin direction of Motor B
-#define enablePinB 11               // PWM signal for controlling speed Motor B
+#define inPin1B 7                  // Digital input pin to control spin direction of Motor B
+#define inPin2B 8                  // Digital input pin to control spin direction of Motor B
+#define enablePinB 9               // PWM signal for controlling speed Motor B
 
-#define standardMotorSpeed 100      // Standard motor driving speed
+#define standardMotorSpeed 50      // Standard motor driving speed
 // motor A: left - bad (offset by 70)
 
 // 
@@ -61,14 +61,15 @@ L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B);
 void setup() {
   Serial.begin(9600);                       // [bits/s] Communication data rate between Arduino and Serial Monitor
 
-//  if (colourSensor1.begin()){
-//    // If the sensor starts up correctly
-//    Serial.println("Found colour sensor!");
-//  } else {
-//    Serial.println("The colour sensor was not found...");
-//    // while (1); // pause
-//  }
-//  
+  if (colourSensor.begin()){
+    // If the sensor starts up correctly
+    Serial.println("Found colour sensor!");
+  } else {
+    Serial.println("The colour sensor was not found...");
+    // while (1); // pause
+  }
+
+//  setupServo();
   setupMotors();
   
 //  // PID controller
@@ -83,17 +84,20 @@ void loop(void) {
   // --- Colour sensor ---
   // Read sensor 1
 //  Serial.println("\nColour Sensor");
-//  String currentColour1 = identifyColour(colourSensor1);
+//  String currentColour1 = identifyColour(colourSensor);
+  
   // Testing
-//  stopAtRed(colourSensor1);
-//  stopAtBlue(colourSensor1);
+//  followRedLine(colourSensor, colourSensor2);
+//  testingColourSensor(colourSensor);
+//  runServo();
+  constructionCheckMotors(colourSensor);
   
   // --- IR sensor ---
 //  Serial.println("\nIR Sensor");
 //  unsigned long currIRDist = getIRDistance();
-  testingIR();
+//  testingIR();
 
-  // ALGORITHM
+  // ALGORITHM - TBD
 //  if (currentColour1 == "blue" && currIRDist >= irLegoThreshold){
       // Keep driving
 //      runMotors();
