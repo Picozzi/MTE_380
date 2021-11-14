@@ -1,7 +1,3 @@
-void setupMotors(){
-    motors.setSpeed(standardMotorSpeed);        // Set initial speed for both motors
-}
-
 // TESTING
 void turnLeft(){
   // Both motors 
