@@ -2,7 +2,8 @@ void readIMU(){
   sensors_event_t accel;
   sensors_event_t gyro;
   sensors_event_t temp;
-  imu.getEvent(&accel, &gyro, &temp);
+  sensors_event_t mag;
+  imu.getEvent(&accel, &gyro, &temp, &mag);
 
   Serial.print("\t\tTemperature ");
   Serial.print(temp.temperature);
@@ -26,4 +27,8 @@ void readIMU(){
   Serial.println();
 
   delay(5000);
+}
+
+void testingPID(){
+//  input = analogRead();
 }

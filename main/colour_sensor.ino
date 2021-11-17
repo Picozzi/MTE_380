@@ -1,31 +1,3 @@
-//void setupColourSensor(){
-//  if (colourSensor.begin()){
-//    // If the sensor starts up correctly
-//    Serial.println("Found colour sensor!");
-//  } else {
-//    Serial.println("The colour sensor was not found...");
-//    // while (1); // pause
-//  }
-//
-//  // Set pin outputs
-////  pinMode(redPin, OUTPUT);
-////  pinMode(greenPin, OUTPUT);
-////  pinMode(bluePin, OUTPUT);
-//
-//  for (int i=0; i<256; i++){
-//    float x = i;
-//    x /= 255;
-//    x = pow(x, 2.5);
-//    x *= 255;
-//
-//    if (commonAnode){
-//      gammaTable[i] = 255 - x;  
-//    } else {
-//      gammaTable[i] = x;
-//    }
-//  }
-// }
-
 /*
  * TESTING: 11/08/2021
  * CARDBOARD: R: 110, G: 77, B: 54 
@@ -94,7 +66,9 @@ bool foundRed(Adafruit_TCS34725 colourSensor){
 
   return false;
 }
-
+/*
+ * 
+ */
 bool foundBlue(Adafruit_TCS34725 colourSensor){  
   uint16_t r, g, b, clear;//, lux;
   colourSensor.getRawData(&r, &g, &b, &clear);
@@ -109,23 +83,6 @@ bool foundBlue(Adafruit_TCS34725 colourSensor){
 
   return false;
 }
-
-
-
-//String identifyColour(Adafruit_TCS34725 colourSensor){  
-//  uint16_t r1, g1, b1, clear1;
-//  colourSensor.getRawData(&r1, &g1, &b1, &clear1);
-//  if ((r1 < 200) && (g1 < 400) && (b1 >= 500)){ // at night 11/10/2021 8:07 PM
-//    Serial.print("\tFOUND BLUE.");
-//    return "blue";
-//  }
-//  else if ((r1 >= 700) && (g1 < 300) && (b1 < 300)){
-//    Serial.print("\tFOUND RED.");
-//    return "red";
-//  }
-//
-//  return "none";
-//}
 
 void resetMotorsSpeed(uint16_t leftMotorSpeed){
   // Reset speed
@@ -201,7 +158,7 @@ void constructionCheckMotors(Adafruit_TCS34725 sensor1){
  */
 void followRedLine(Adafruit_TCS34725 sensor1, Adafruit_TCS34725 sensor2, uint16_t leftMotorSpeed){
   // Timer to stop motors
-//  unsigned long startTime = millis();
+  //  unsigned long startTime = millis();
   
   // Reset speed
   motors.setSpeed(standardMotorSpeed);

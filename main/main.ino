@@ -10,6 +10,8 @@
 #include <Adafruit_ICM20948.h>  // IMU specific model library
 #include <Adafruit_Sensor.h>    // Adafruit sensor library
 
+bool testing = false; // TOGGLE THIS WHEN TESTING
+
 /*
  * Models:
  * IMU: Adafruit TDK InvenSense ICM-20948
@@ -17,7 +19,7 @@
  * Colour: 
  */
 
-/* MUX Defs */
+/* --- MUX Defs --- */
 #define muxAddress 0x70           // Multiplexer address for I2C
 #define colourLeftAddress 0
 #define colourRightAddress 1
@@ -46,8 +48,12 @@ Adafruit_TCS34725 colourLeft = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, 
 
 SharpIR SharpIR(irPin, irModel); // Unsure if I can/it's better to assign a var to this object
 
-/* IMU Sensor Defs */
+/* --- IMU Sensor Defs --- */
 Adafruit_ICM20948 imu;
+
+/* --- Servo Motor Defs --- */
+Servo servoMotor;
+#define servoPin 2
 
 /* --- Motor Controller Defs --- */
 /* NOTE: May name motorA as motorRight instead later */
@@ -55,32 +61,39 @@ Adafruit_ICM20948 imu;
 #define inPin1A 4                   // Digital input pin to control spin direction of Motor A
 #define inPin2A 5                   // Digital input pin to control spin direction of Motor A
 
+#define enablePinB 6                // PWM signal for controlling speed Motor B
 #define inPin1B 7                   // Digital input pin to control spin direction of Motor B
 #define inPin2B 8                   // Digital input pin to control spin direction of Motor B
-#define enablePinB 6               // PWM signal for controlling speed Motor B
 
 #define lowestMotorSpeed 150        // Standard motor driving speed
-#define standardMotorSpeed 255      // Standard motor driving speed
+#define standardMotorSpeed 150      // Standard motor driving speed
 // motor A: left - bad (offset by 70)
 
-L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B);
+L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B); // RENAME TO dcMotors
 
-/* Servo Motor Defs */
-Servo servo;
-#define servoPin 2
+// --- Boolean Flags ---
+bool foundLego = false;
+bool droppedOffLego = false;
+
+bool redRight = false;
+bool redLeft = false;
+bool blueRight = false;
+bool blueLeft = false;
+bool greenRight = false;
+bool greenLeft = false;
 
 /* --- PID Controller Defs --- */
 /* NOTE: MAY NEED TO CHANGE/REMOVE THESE PIN DEFS */
 //#define inputPin_PID 0        // PID input
 //#define outputPin_PID 3       // PID output
 
-//double Setpoint, Input, Output;
-
-// NOTE: Apparantly these constants are the ones to be tuned
+//double setpoint, input, output;
+//
+//// NOTE: Apparantly these constants are the ones to be tuned
 //double Kp = 2;
 //double Ki = 5;
 //double Kd = 1;
-//PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+//PID pid(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
 
 void setup() {
   Serial.begin(9600);   // [bits/s] Communication data rate between Arduino and Serial Monitor
@@ -115,28 +128,29 @@ void setup() {
 //  }
 //  else {
 //    Serial.println("IMU sensor was not found.");
-//  }
+//  }  
+
+//  imu.setAccelRange(ICM20948_ACCEL_RANGE_16_G);
+//  imu.setGyroRange(ICM20948_GYRO_RANGE_2000_DPS);
 
   // setup DC motors (front wheels)
   motors.setSpeed(standardMotorSpeed);        // Set initial speed for both motors
 
 //  // setup servo motors
- servo.attach(servoPin);
- servo.write(10);
+//  servoMotor.attach(servoPin);
+//  servoMotor.write(160);
 
 //  // PID controller
-//  Input = analogRead(inputPin_PID);       // set-up PID
-//  Setpoint = 100;
+//  input = analogRead(inputPin_PID);       // set-up PID
+//  setpoint = 100;
 //
-//  myPID.SetMode(AUTOMATIC);               // turn PID on
-//  myPID.SetTunings(Kp, Ki, Kd);
+//  pid.SetMode(AUTOMATIC);               // turn PID on
+//  pid.SetTunings(Kp, Ki, Kd);
+  //  pid.SetOutputLimits(0, 255);
 }
 
 void loop(void) {
   // --- Colour sensor ---
-  // Read sensor 1
-//  Serial.println("\nColour Sensor");
-//  String currentColour1 = identifyColour(colourLeft);
 
   /* Set up colour sensor */
 //  testingColourSensor(colourLeft, colourRight);
@@ -145,46 +159,41 @@ void loop(void) {
 //  uint16_t leftMotorSpeed = standardMotorSpeed + 5;
   
 //  followRedLine(colourLeft, colourRight, leftMotorSpeed);
-  motors.setSpeed(standardMotorSpeed);
-  motors.forward();
-  
-  // Sensor 1
-  uint16_t r1, g1, b1, clear1;//, lux1;
-  colourRight.getRawData(&r1, &g1, &b1, &clear1);
 
- // Sensor 2
-  uint16_t r2, g2, b2, clear2;//, lux2;
-  colourLeft.getRawData(&r2, &g2, &b2, &clear2);
-
-  selectMuxPin(colourRightAddress);
-  while (foundRed(colourRight)){ // NOTE: DEFINE CONSTANTS FOR THESE COLOUR RANGES
-    // Shift leftwards
-       motors.stopA();
-       Serial.println("Stop A");
-  } 
-
-  selectMuxPin(colourLeftAddress);
-  while (foundRed(colourLeft)){
-    // Shift rightwards
-       motors.stopB();
-       Serial.println("Stop B");
-  }
-
-  if (getIRDist() < 15){ // WHY DO WE NEED DELAYS?
-    servo.write(10);
-    delay(500);
-    servo.write(180);
-    delay(500);
-  }
+  // --- RUN ---
+//  motors.setSpeed(standardMotorSpeed);
+//  motors.forward();
+//  
+//  // Sensor 1
+//  uint16_t r1, g1, b1, clear1;//, lux1;
+//  colourRight.getRawData(&r1, &g1, &b1, &clear1);
+//
+// // Sensor 2
+//  uint16_t r2, g2, b2, clear2;//, lux2;
+//  colourLeft.getRawData(&r2, &g2, &b2, &clear2);
+//
+//  selectMuxPin(colourRightAddress);
+//  while (foundRed(colourRight)){ // NOTE: DEFINE CONSTANTS FOR THESE COLOUR RANGES
+//    // Shift leftwards
+//       motors.stopA();
+//       Serial.println("Stop A");
+//  } 
+//
+//  selectMuxPin(colourLeftAddress);
+//  while (foundRed(colourLeft)){
+//    // Shift rightwards
+//       motors.stopB();
+//       Serial.println("Stop B");
+//  }
+//
+//  if (getIRDist() < 15){ // WHY DO WE NEED DELAYS?
+//    servoMotor.write(10);
+//    delay(500);
+//    servoMotor.write(180);
+//    delay(500);
+//  }
 
   // blue statement - bool -- while poll IR 
-
-//  motors.forward();
-//  resetMotorsSpeed(leftMotorSpeed);
-//  motors.forward();
-//  testingColourSensor(colourLeft);
-//  runServo();
-//  constructionCheckMotors(colourLeft);
 
   // --- IMU sensor ---
 //  readIMU();
@@ -204,17 +213,123 @@ void loop(void) {
 //    // claws to pick up Lego man
 //  }
 
-  // Motors
-//  Serial.println("Motors Testing");
-//  runMotors();
-
-// LATER
-//  // PID controller
-//  Input = analogRead(inputPin_PID);
-//  myPID.Compute();                        // PID calculation
+//  // --- PID controller ---
+//  input = analogRead(inputPin_PID);
+//  pid.Compute();                        // PID calculation
 //  analogWrite(outputPin_PID, Output);
-
-//  Serial.print(Input);
+//
+//  Serial.print(input);
 //  Serial.print(" ");
-//  Serial.println(Output);
+//  Serial.println(output);
+
+  // --- Testing line following ---
+  lineFollowing();
+}
+
+void lineFollowing(){
+  redRight = false;
+  redLeft = false;
+  blueRight = false;
+  blueLeft = false;
+  greenRight = false;
+  greenLeft = false;
+  
+  // Colour sensor 1
+  uint16_t r1, g1, b1, clear1;//, lux1;
+  colourRight.getRawData(&r1, &g1, &b1, &clear1);
+
+  // Colour sensor 2
+  uint16_t r2, g2, b2, clear2;//, lux2;
+  colourLeft.getRawData(&r2, &g2, &b2, &clear2);
+
+  /* 
+   *  make Case switch or if statements to differentiate between:
+   *  1) finding target (lego man)
+   *  2) finding safe zone
+   *  3) finding home (start)
+   */
+
+  if (testing){
+    motors.setSpeed(255);
+    motors.forward();
+  }
+
+//  if (!foundLego){
+//    // Case 1
+//    // Chuck everything related in here    
+//  }
+
+  else {
+    // --- RUN ---
+    motors.setSpeed(standardMotorSpeed);
+    motors.forward();
+//    motors.forwardA(); // right
+  
+  //  // Check for target
+  //  // find blue -- place here so we don't miss it
+  //  selectMuxPin(colourLeftAddress);
+  //  if (foundBlue(colourLeft)){ // NOTE: DEFINE CONSTANTS FOR THESE COLOUR RANGES
+  //    blueLeft = true;
+  //    motors.stop();
+  //  }
+  //  
+  //  selectMuxPin(colourRightAddress);
+  //  if (foundBlue(colourRight)){
+  //    blueRight = true;
+  //      motors.stop();
+  //  }
+  //
+  //  // Check robot is facing center of target
+  //  if (blueLeft && blueRight){
+  //    // claw algo
+  //    closeClaw();
+  //    // break; // in final version
+  //    while(1){
+  //      // for now
+  //      motors.stop();
+  //    } 
+  //  }
+
+
+  // NOTE: SHARP TURNS, STOP/SLOW DOWN OTHER MOTOR
+
+    // WORKS - 7:10 PM TUES. NOVE 16
+    // Shift right
+    selectMuxPin(colourLeftAddress);
+    if (!foundRed(colourLeft)){ // NOTE: DEFINE CONSTANTS FOR THESE COLOUR RANGES
+      selectMuxPin(colourRightAddress);
+      if (foundRed(colourRight)){
+        while(foundRed(colourRight)){
+          motors.setSpeedB(standardMotorSpeed + 10);
+          motors.forward();
+          Serial.println("Turning right");
+        }
+      }
+    }
+  
+    motors.setSpeed(standardMotorSpeed);
+    motors.forward();
+    
+    // Shift left
+    selectMuxPin(colourRightAddress);
+    if (!foundRed(colourRight)){ // NOTE: DEFINE CONSTANTS FOR THESE COLOUR RANGES
+      selectMuxPin(colourLeftAddress);
+      if (foundRed(colourLeft)){
+        while(foundRed(colourLeft)){
+          motors.setSpeedA(standardMotorSpeed + 10);
+          motors.forward();
+          Serial.println("Turning left");
+        }
+      }
+    }
+  
+    motors.setSpeed(standardMotorSpeed);
+    motors.forward();
+  }
+//  selectMuxPin(colourRightAddress);
+//  while (foundRed(colourRight)){ // NOTE: DEFINE CONSTANTS FOR THESE COLOUR RANGES
+//    // Shift leftwards
+//       motors.stopA();
+//       Serial.println("Stop A");
+//  } 
 }
