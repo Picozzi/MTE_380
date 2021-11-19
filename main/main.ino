@@ -1,7 +1,6 @@
 // Libraries
 #include <Wire.h>               // I2C library
 #include <Adafruit_TCS34725.h>  // Colour sensor library
-//#include "Adafruit_TCS34725.h"  
 #include <PID_v1.h>             // PID controller library
 #include <SharpIR.h>            // IR proximity sensor library
 #include <L298NX2.h>            // Motor drive controller library (powers 2 motors)
@@ -21,21 +20,12 @@ bool testing = false; // TOGGLE THIS WHEN TESTING
 
 /* --- MUX Defs --- */
 #define muxAddress 0x70           // Multiplexer address for I2C
-#define colourLeftAddress 0
-#define colourRightAddress 1
+#define colourRightAddress 0
+#define colourLeftAddress 1
 #define imuAddress 2
 // 5 V
 
 /* --- Colour Sensor Defs --- */
-/*NOTE: that the pin vals here are arbitrary - go with whatever electrical needs*/
-//#define redPin 2                // Digital pin
-//#define greenPin 3              // PWM pin (doesn't have to be PWM)
-//#define bluePin 4               // Digital pin
-
-//#define commonAnode false         // for using a common cathode LED
-
-//byte gammaTable[256];             // RGB gamma colour
-
 Adafruit_TCS34725 colourRight = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X); // NOTE: CAN PROBABLY CHANGE THE INPUT PARAMS
 Adafruit_TCS34725 colourLeft = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 // 3.3 V
@@ -44,9 +34,10 @@ Adafruit_TCS34725 colourLeft = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, 
 #define irPin A0                  // Analog input pin
 #define irModel 1080              // sensor model library uses for GP2Y0A21YK
 #define irLegoThreshold 5         // ***CHANGE THROUGH TESTING; distance threshold to find the Lego man
+#define irStartWallThreshold 10   // CHANGE THROUGH TESTING
 // 5 V
 
-SharpIR SharpIR(irPin, irModel); // Unsure if I can/it's better to assign a var to this object
+SharpIR SharpIR(irPin, irModel); // RENAME TO irSensor
 
 /* --- IMU Sensor Defs --- */
 Adafruit_ICM20948 imu;
@@ -56,7 +47,9 @@ Servo servoMotor;
 #define servoPin 2
 
 /* --- Motor Controller Defs --- */
-/* NOTE: May name motorA as motorRight instead later */
+// A left
+// B right
+/* NOTE: May name motorB as motorRight instead later */
 #define enablePinA 3                // PWM signal for controlling speed Motor A
 #define inPin1A 4                   // Digital input pin to control spin direction of Motor A
 #define inPin2A 5                   // Digital input pin to control spin direction of Motor A
@@ -67,6 +60,7 @@ Servo servoMotor;
 
 #define lowestMotorSpeed 150        // Standard motor driving speed
 #define standardMotorSpeed 150      // Standard motor driving speed
+#define baseSpeedMotorA 220
 // motor A: left - bad (offset by 70)
 
 L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B); // RENAME TO dcMotors
@@ -100,7 +94,8 @@ void setup() {
 
   Wire.begin();
 
-  Serial.println("HERE");
+  Serial.println("START");
+  
   // Setup colour sensors
   selectMuxPin(colourLeftAddress);
   if (colourLeft.begin()){
@@ -135,6 +130,7 @@ void setup() {
 
   // setup DC motors (front wheels)
   motors.setSpeed(standardMotorSpeed);        // Set initial speed for both motors
+  motors.setSpeedA(baseSpeedMotorA);
 
 //  // setup servo motors
 //  servoMotor.attach(servoPin);
@@ -233,15 +229,18 @@ void lineFollowing(){
   blueLeft = false;
   greenRight = false;
   greenLeft = false;
-  
+
+  /*
   // Colour sensor 1
-  uint16_t r1, g1, b1, clear1;//, lux1;
-  colourRight.getRawData(&r1, &g1, &b1, &clear1);
+  uint16_t rR, gR, bR, clearR;//, lux1;
+  colourRight.getRawData(&rR, &gR, &bR, &clearR);
 
   // Colour sensor 2
-  uint16_t r2, g2, b2, clear2;//, lux2;
-  colourLeft.getRawData(&r2, &g2, &b2, &clear2);
+  uint16_t rL, gL, bL, clearL;//, lux2;
+  colourLeft.getRawData(&rL, &gL, &bL, &clearL);
 
+  */
+  
   /* 
    *  make Case switch or if statements to differentiate between:
    *  1) finding target (lego man)
@@ -250,8 +249,23 @@ void lineFollowing(){
    */
 
   if (testing){
-    motors.setSpeed(255);
+    motors.setSpeedB(standardMotorSpeed);
+    motors.setSpeedA(baseSpeedMotorA);
     motors.forward();
+
+    selectMuxPin(colourRightAddress);
+    if (foundRed(colourRight)){
+      Serial.println("\nRight");
+      motors.stop();
+      while(1){}
+    }    
+    
+    selectMuxPin(colourLeftAddress);
+    if (foundRed(colourLeft)){
+      Serial.println("\nRight");
+      motors.stop();
+      while(1){}
+    }
   }
 
 //  if (!foundLego){
@@ -261,9 +275,9 @@ void lineFollowing(){
 
   else {
     // --- RUN ---
-    motors.setSpeed(standardMotorSpeed);
+    motors.setSpeedB(standardMotorSpeed);
+    motors.setSpeedA(baseSpeedMotorA);
     motors.forward();
-//    motors.forwardA(); // right
   
   //  // Check for target
   //  // find blue -- place here so we don't miss it
@@ -279,57 +293,69 @@ void lineFollowing(){
   //      motors.stop();
   //  }
   //
-  //  // Check robot is facing center of target
-  //  if (blueLeft && blueRight){
-  //    // claw algo
-  //    closeClaw();
-  //    // break; // in final version
-  //    while(1){
-  //      // for now
-  //      motors.stop();
-  //    } 
-  //  }
 
+  //  // Check robot is facing center of target
+//    if (blueLeft && blueRight){
+//      // claw algo
+//     // slow walk until ir sees it
+//      motors.setSpeed(lowestMotorSpeed);
+//      motors.forward();
+//      if (getIRDist() < irLegoThreshold){
+//          motors.stop();
+//          closeClaw();
+//        // break; // in final version
+//        while(1){
+//          // for now
+//        } 
+//      }     
+//    }
+//      else {
+//        // potentially pushing the lego man if the ir sensor doesn't work
+//        // timer to close claws and proceed with next step
+//        // break;
+//      }
 
   // NOTE: SHARP TURNS, STOP/SLOW DOWN OTHER MOTOR
 
-    // WORKS - 7:10 PM TUES. NOVE 16
+    // WORKS - 7:10 PM TUES. NOV 16
     // Shift right
     selectMuxPin(colourLeftAddress);
-    if (!foundRed(colourLeft)){ // NOTE: DEFINE CONSTANTS FOR THESE COLOUR RANGES
+    if (!foundRed(colourLeft))
+    { // NOTE: DEFINE CONSTANTS FOR THESE COLOUR RANGES
       selectMuxPin(colourRightAddress);
-      if (foundRed(colourRight)){
-        while(foundRed(colourRight)){
-          motors.setSpeedB(standardMotorSpeed + 10);
+      if (foundRed(colourRight))
+      {
+        while(foundRed(colourRight))
+        {
+          motors.setSpeedA(baseSpeedMotorA + 50);
           motors.forward();
-          Serial.println("Turning right");
+//          Serial.println("Turning right");
         }
       }
     }
   
-    motors.setSpeed(standardMotorSpeed);
+    motors.setSpeedB(standardMotorSpeed);
+    motors.setSpeedA(baseSpeedMotorA); // seperate motorABaseSpeed and motorB
     motors.forward();
     
     // Shift left
     selectMuxPin(colourRightAddress);
-    if (!foundRed(colourRight)){ // NOTE: DEFINE CONSTANTS FOR THESE COLOUR RANGES
+    if (!foundRed(colourRight))
+    {
       selectMuxPin(colourLeftAddress);
-      if (foundRed(colourLeft)){
-        while(foundRed(colourLeft)){
-          motors.setSpeedA(standardMotorSpeed + 10);
+      if (foundRed(colourLeft))
+      {
+        while(foundRed(colourLeft))
+        {
+          motors.setSpeedB(standardMotorSpeed + 50);
           motors.forward();
-          Serial.println("Turning left");
+//          Serial.println("Turning left");
         }
       }
     }
   
-    motors.setSpeed(standardMotorSpeed);
+    motors.setSpeedB(standardMotorSpeed);
+    motors.setSpeedA(baseSpeedMotorA); // seperate motorABaseSpeed and motorB
     motors.forward();
   }
-//  selectMuxPin(colourRightAddress);
-//  while (foundRed(colourRight)){ // NOTE: DEFINE CONSTANTS FOR THESE COLOUR RANGES
-//    // Shift leftwards
-//       motors.stopA();
-//       Serial.println("Stop A");
-//  } 
 }

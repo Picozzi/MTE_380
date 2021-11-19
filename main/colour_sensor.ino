@@ -10,62 +10,23 @@
  * NOTE: Black and white slight sketch
  */
 
-/*
- * Uses MUX, prints both colour sensor readings
- */
-void testingColourSensor(Adafruit_TCS34725 colourLeft, Adafruit_TCS34725 colourRight){  
-  // Sensor Left
-  uint16_t r1, g1, b1, clear1, lux1;
-  selectMuxPin(colourLeftAddress);
-  colourLeft.getRawData(&r1, &g1, &b1, &clear1);
-  lux1 = colourLeft.calculateLux(r1, g1, b1);
-  Serial.println("\nLeft Colour Sensor");
-  printColourInfo(r1, g1, b1, clear1, lux1);
-
-  // Sensor Right
-  uint16_t r2, g2, b2, clear2, lux2;
-  selectMuxPin(colourRightAddress);
-  colourRight.getRawData(&r2, &g2, &b2, &clear2);
-  lux2 = colourRight.calculateLux(r2, g2, b2);
-  Serial.println("\nRight Colour Sensor");
-  printColourInfo(r2, g2, b2, clear2, lux2);
-
-  // 5:30 PM Night 11/11/2021
-  if ((r1 < 200) && (g1 < 400) && (b1 >= 500)){ // at night 11/10/2021 8:07 PM
-    Serial.print("\tFOUND BLUE.");
-  }
-  else if ((r1 >= 700) && (g1 < 300) && (b1 < 300)){
-    Serial.print("\tFOUND RED.");
-  }
-
-//  // 5:30 PM Night 11/11/2021
-//  if ((r1 < 200 && r2 < 200) && (g1 < 400 && g2 < 400) && (b1 >= 500 && b2 >= 500)){ // at night 11/10/2021 8:07 PM
-//    Serial.print("\tFOUND BLUE.");
-//  }
-//  else if ((r1 >= 700 && r2 >= 700) && (g1 < 300 && g2 < 300) && (b1 < 300 && b2 < 300)){
-//    Serial.print("\tFOUND RED.");
-//  }
-  
-  Serial.println("\n");
-
-  delay(5000);
-}
 
 bool foundRed(Adafruit_TCS34725 colourSensor){  
-  uint16_t r, g, b, clear;//, lux;
+  uint16_t r, g, b, clear;
   colourSensor.getRawData(&r, &g, &b, &clear);
-//  lux = colourSensor.calculateLux(r, g, b);
   
-//  printColourInfo(r, g, b, clear, lux);
+  printColourInfo(r, g, b, clear);
 //  if ((r >= 700) && (g < 300) && (b < 300)){ // at night 11/10/2021 8:07 PM 
 //  if ((r >= 500) && (g < 300) && (b < 300)){ // at night 11/10/2021 11:07 PM (this prob is good)
-  if ((r >= 500) && (g < 300) && (b < 300)){ // cloudy afternoon 11/14/2021 3:22 PM 
+//  if ((r >= 500) && (g < 300) && (b < 300)){ // cloudy afternoon 11/14/2021 3:22 PM 
+  if ((r >= 2000) && (g < 1000) && (b < 1000)){ // night 11/18/2021 6:42 PM 
     Serial.print("\nFOUND RED.");
     return true;
   } 
 
   return false;
 }
+
 /*
  * 
  */
@@ -75,7 +36,8 @@ bool foundBlue(Adafruit_TCS34725 colourSensor){
 //  lux = colourSensor.calculateLux(r, g, b);
   
 //  printColourInfo(r, g, b, clear, lux);
-  if ((r < 200) && (g < 400) && (b >= 500)){ // at night 11/10/2021 8:07 PM    
+//  if ((r < 200) && (g < 400) && (b >= 500)){ // at night 11/10/2021 8:07 PM    
+  if ((r < 600) && (g < 1400) && (b >= 2000)){ // at night 11/19/2021 6:43 PM    
     Serial.println("\nFOUND BLUE.");
     return true;
     // NOTE: WHEELS KEEP GOING FOR ~0.5 S AFTER .STOP()
@@ -235,8 +197,10 @@ void followRedLine(Adafruit_TCS34725 sensor1, Adafruit_TCS34725 sensor2, uint16_
 //  return "none";
 //}
 
-void printColourInfo(uint16_t r, uint16_t g, uint16_t b, uint16_t clear, uint16_t lux){
-  // Print read colour sensor values
+/*
+ * Print read colour sensor values
+ */
+void printColourInfo(uint16_t r, uint16_t g, uint16_t b, uint16_t clear){
   Serial.print("\nC: ");
   Serial.print(clear);
   Serial.print("\tR: ");
@@ -245,7 +209,5 @@ void printColourInfo(uint16_t r, uint16_t g, uint16_t b, uint16_t clear, uint16_
   Serial.print(g);
   Serial.print("\tB: ");
   Serial.print(b);
-  Serial.print("\tLux: ");
-  Serial.print(lux);
-  delay(3000);
+//  delay(100);
 }
