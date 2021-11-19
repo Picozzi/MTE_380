@@ -112,7 +112,7 @@ PID pid(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
  * Set up function
  */
 void setup() {
-  Serial.begin(9600);   // [bits/s] Communication data rate between Arduino and Serial Monitor
+  Serial.begin(9600);
 
   Wire.begin();
 
