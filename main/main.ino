@@ -1,21 +1,24 @@
 // Libraries
 #include <Wire.h>               // I2C library
 #include <Adafruit_TCS34725.h>  // Colour sensor library
-#include <PID_v1.h>             // PID controller library
 #include <SharpIR.h>            // IR proximity sensor library
-#include <L298NX2.h>            // Motor drive controller library (powers 2 motors)
-#include <Servo.h>              // Servo motor library /*NOTE: DISABLES PIN 9/10 FOR PWM*/
+#include <L298NX2.h>            // DC Motor drive controller library (powers 2 motors)
+#include <Servo.h>              // Servo motor library /*NOTE: DISABLES PINS 9 AND 10 FOR PWM*/
 #include <Adafruit_ICM20X.h>    // IMU library
 #include <Adafruit_ICM20948.h>  // IMU specific model library
 #include <Adafruit_Sensor.h>    // Adafruit sensor library
+#include <PID_v1.h>             // PID controller library
 
 bool testing = false; // TOGGLE THIS WHEN TESTING
 
 /*
  * Models:
- * IMU: Adafruit TDK InvenSense ICM-20948
  * MUX: Adafruit TCA9548A 1-to-8 I2C Multiplexer
- * Colour: 
+ * Colour: Adagruit TCS34725
+ * IR: Sharp IR
+ * IMU: Adafruit TDK InvenSense ICM-20948
+ * DC motor drive controller: L298NX2
+ * Servo motor
  */
 
 /* --- MUX Defs --- */
@@ -33,8 +36,8 @@ Adafruit_TCS34725 colourLeft = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, 
 /* --- IR Proximity Sensor Defs --- */
 #define irPin A0                  // Analog input pin
 #define irModel 1080              // sensor model library uses for GP2Y0A21YK
-#define irLegoThreshold 5         // ***CHANGE THROUGH TESTING; distance threshold to find the Lego man
-#define irStartWallThreshold 10   // CHANGE THROUGH TESTING
+#define irLegoThreshold 10        // ***CHANGE THROUGH TESTING; distance threshold to find the Lego man
+#define irStartWallThreshold 15   // CHANGE THROUGH TESTING
 // 5 V
 
 SharpIR SharpIR(irPin, irModel); // RENAME TO irSensor
@@ -42,13 +45,9 @@ SharpIR SharpIR(irPin, irModel); // RENAME TO irSensor
 /* --- IMU Sensor Defs --- */
 Adafruit_ICM20948 imu;
 
-/* --- Servo Motor Defs --- */
-Servo servoMotor;
-#define servoPin 2
-
 /* --- Motor Controller Defs --- */
-// A left
-// B right
+// Motor A: left
+// Motor B: right
 /* NOTE: May name motorB as motorRight instead later */
 #define enablePinA 3                // PWM signal for controlling speed Motor A
 #define inPin1A 4                   // Digital input pin to control spin direction of Motor A
@@ -58,17 +57,35 @@ Servo servoMotor;
 #define inPin1B 7                   // Digital input pin to control spin direction of Motor B
 #define inPin2B 8                   // Digital input pin to control spin direction of Motor B
 
-#define lowestMotorSpeed 150        // Standard motor driving speed
+// FINALIZE THESE ONCE TESTING IS COMPLETE
+#define lowestMotorSpeed 150        // Lowest motor driving speed
 #define standardMotorSpeed 150      // Standard motor driving speed
-#define baseSpeedMotorA 220
+#define baseSpeedMotorA 220         // Base motor A driving speed
+#define baseSpeedMotorB 150         // Base motor B driving speed
 // motor A: left - bad (offset by 70)
 
 L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B); // RENAME TO dcMotors
 
-// --- Boolean Flags ---
-bool foundLego = false;
-bool droppedOffLego = false;
+/* --- Servo Motor Defs --- */
+Servo servoMotor;
+#define servoPin 2
 
+// --- Boolean Flags ---
+/*
+ * There will be 3 cases for the run
+ * 1) Searching for Lego man
+ * 2) Found Lego man, drop him off at a safe zone
+ * 3) Return home to the start location
+ */
+bool foundLego1 = false;
+bool droppedOffLego2 = false;
+bool returningHome3 = false;
+
+/*
+ * Since the MUX only allows 1 IC2 device to be read at one instance, 
+ * use flage for when the right and left colour sensors read a desired 
+ * colour.
+ */
 bool redRight = false;
 bool redLeft = false;
 bool blueRight = false;
@@ -78,17 +95,22 @@ bool greenLeft = false;
 
 /* --- PID Controller Defs --- */
 /* NOTE: MAY NEED TO CHANGE/REMOVE THESE PIN DEFS */
-//#define inputPin_PID 0        // PID input
-//#define outputPin_PID 3       // PID output
+/*
+#define inputPin_PID 0        // PID input
+#define outputPin_PID 3       // PID output
 
-//double setpoint, input, output;
-//
-//// NOTE: Apparantly these constants are the ones to be tuned
-//double Kp = 2;
-//double Ki = 5;
-//double Kd = 1;
-//PID pid(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
+double setpoint, input, output;
 
+// NOTE: Apparantly these constants are the ones to be tuned
+double Kp = 2;
+double Ki = 5;
+double Kd = 1;
+PID pid(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
+*/
+
+/*
+ * Set up function
+ */
 void setup() {
   Serial.begin(9600);   // [bits/s] Communication data rate between Arduino and Serial Monitor
 
