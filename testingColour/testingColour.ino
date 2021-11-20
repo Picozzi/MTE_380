@@ -63,22 +63,65 @@ void setup() {
   // setup DC motors (front wheels)
   motors.setSpeedB(baseSpeedMotorB);
   motors.setSpeedA(baseSpeedMotorA);
+  motors.forward(); // for zigZag function
 }
 
 void loop() {
 //  testingReversalSimple();  
 //  testingHardTurn();
 //  testingStopTurn();
-
 //  testingJames2();
+  testingZigZag();
 
-  testingBackup();
-//  motors.forward();
+//  testingBackup();
+
+  // Game day environment colour sensor calibration
   // cork: R: 4000, G: 3970,, B: 3074
   // green: 2717 (2409) (2560) 2261, G: 3655 (3805) (4145), B: 2210 (1900) (2040) 1770
   // red: 2919-20 (2904), G: 830 (780) 429 , B: 827 (790) 653
   // blue: R: 697 (622), G: 2069 (1970), B: 3449 (3291)
 //  readingColours();
+}
+
+void testingZigZag(){
+  motors.setSpeedB(baseSpeedMotorB);
+  motors.setSpeedA(baseSpeedMotorA);
+
+  selectMuxPin(colourRightAddress);
+  if (foundRed(colourRight)){
+    redRight = true;
+  }
+
+  while (redRight){
+    motors.stopB();
+     selectMuxPin(colourLeftAddress);
+     if (foundRed(colourLeft)){
+        motors.stopA();
+        redRight = false;
+        break;
+     }
+  }
+
+  redRight = false;
+  motors.forwardB();
+  
+  selectMuxPin(colourLeftAddress);
+  if (foundRed(colourLeft)){
+    redLeft = true;
+  }
+
+  while (redLeft){
+    motors.stopA();
+     selectMuxPin(colourRightAddress);
+     if (foundRed(colourRight)){
+        motors.stopB();
+        redLeft = false;
+        break;
+     }
+  }
+  redLeft = false;
+
+  motors.forwardA();
 }
 
 /*
