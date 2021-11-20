@@ -18,12 +18,12 @@
 L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B); // RENAME TO dcMotors
 
 void setup() {
-  motors.setSpeed(standardMotorSpeed);        // Set initial speed for both motors
+  motors.setSpeed(100);        // Set initial speed for both motors
 }
 
 void loop() {
 //  motors.setSpeedA(standardMotorSpeed + 35);
 //  motors.setSpeedA(220); // offset for motor A is by 70
-  motors.setSpeedA(standardMotorSpeed + 60); // offset for motor A is by 70
+//  motors.setSpeedA(); // offset for motor A is by 70
   motors.forward();
 }

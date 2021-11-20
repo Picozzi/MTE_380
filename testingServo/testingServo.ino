@@ -12,16 +12,16 @@ void setup() {
 }
 
 void loop() {
-  runServo();
+//  runServo();
 
   closeClaw();
 }
 
 void runServo(){
   // scan from 0 to 180 degrees
-  delay(500);
-  servoMotor.write(180);
-  delay(500);
+//  delay(500);
+//  servoMotor.write(180);
+//  delay(500);
 
   for(int angle = 120; angle < 180; angle++)
   {
@@ -38,21 +38,23 @@ void runServo(){
 }
 
 void closeClaw(){
-  delay(500);
-  servoMotor.write(180);
-  delay(500);
+//  delay(500);
+//  servoMotor.write(180);
+//  delay(500);
   
-  for(int angle = 180; angle > 120; angle--)
+  for(int angle = 180; angle > 100; angle--)
   {
     servoMotor.write(angle);
     delay(15);
-  } 
+  }
+
+  while(1){}
 }
 
 void openClaw(){
-  delay(500);
-  servoMotor.write(10);
-  delay(500);
+//  delay(500);
+//  servoMotor.write(10);
+//  delay(500);
   
   for(int angle = 10; angle < 180; angle++)
   {
