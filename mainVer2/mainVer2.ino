@@ -45,6 +45,11 @@ SharpIR SharpIR(irPin, irModel); // RENAME TO irSensor
 /* --- IMU Sensor Defs --- */
 Adafruit_ICM20948 imu;
 
+double prevAngVelocity;
+double prevAngle;
+double prevTime;
+double angPosition = 0;
+
 /* --- Motor Controller Defs --- */
 // Motor A: left
 // Motor B: right
@@ -59,8 +64,10 @@ Adafruit_ICM20948 imu;
 // FINALIZE THESE ONCE TESTING IS COMPLETE
 #define lowestMotorSpeed 150        // Lowest motor driving speed
 #define standardMotorSpeed 150      // Standard motor driving speed
-#define baseSpeedMotorA 220         // Base motor A driving speed
-#define baseSpeedMotorB 150         // Base motor B driving speed
+
+uint16_t baseSpeedMotorB = 140;                          // Base motor B driving speed
+uint16_t baseSpeedMotorA = baseSpeedMotorB + 10;         // Base motor A driving speed
+
 // motor A: left - bad (offset by 70)
 
 L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B);
@@ -84,6 +91,8 @@ bool case3 = false;
  * Since the MUX only allows 1 IC2 device to be read at one instance, 
  * use flag for when the right and left colour sensors read a desired 
  * colour.
+ * 
+ * Red, green, blue colour sensor right and left flags
  */
 bool redRight = false;
 bool redLeft = false;
@@ -108,7 +117,7 @@ PID pid(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
 */
 
 /*
- * Set up function
+ * Setup function
  */
 void setup() {
   Serial.begin(9600);
@@ -134,41 +143,40 @@ void setup() {
     Serial.println("Right colour sensor was not found.");
   }
 
-//  // setup IMU
-//  selectMuxPin(imuAddress);
-//  if (imu.begin_I2C()) {
-//    // If the IMU sensor was connected correctly.
-//    Serial.println("Found IMU sensor!");
-//  }
-//  else {
-//    Serial.println("IMU sensor was not found.");
-//  }  
+  // setup IMU
+  selectMuxPin(imuAddress);
+  if (imu.begin_I2C()) {
+    Serial.println("Found IMU sensor!");
+  }
+  else {
+    Serial.println("IMU sensor was not found.");
+  }  
 
-//  imu.setAccelRange(ICM20948_ACCEL_RANGE_16_G);
-//  imu.setGyroRange(ICM20948_GYRO_RANGE_2000_DPS);
+  imu.setAccelRange(ICM20948_ACCEL_RANGE_16_G);
+  imu.setGyroRange(ICM20948_GYRO_RANGE_2000_DPS);
 
   // setup DC motors (front wheels)
-  motors.setSpeed(standardMotorSpeed);        // Set initial speed for both motors
+  motors.setSpeedB(baseSpeedMotorB);
   motors.setSpeedA(baseSpeedMotorA);
+  motors.forward(); // for zigZag function
 
 //  // setup servo motors
 //  servoMotor.attach(servoPin);
 //  servoMotor.write(160);
 
 //  // PID controller
-//  input = analogRead(inputPin_PID);       // set-up PID
+//  input = analogRead(inputPin_PID);     // set-up PID
 //  setpoint = 100;
 //
 //  pid.SetMode(AUTOMATIC);               // turn PID on
 //  pid.SetTunings(Kp, Ki, Kd);
-  //  pid.SetOutputLimits(0, 255);
+//  pid.SetOutputLimits(0, 255);
 }
 
+/*
+ * Main loop
+ */
 void loop(void) {
-  // --- Colour sensor ---
-
-  /* Set up colour sensor */
-//  testingColourSensor(colourLeft, colourRight);
   
   // Testing
 //  uint16_t leftMotorSpeed = standardMotorSpeed + 5;
