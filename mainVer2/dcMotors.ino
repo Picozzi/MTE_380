@@ -6,6 +6,13 @@ void resetMotorsSpeed(){
   motors.setSpeedA(baseSpeedMotorA); 
 }
 
+///*
+// * 
+// */
+//void turnRobotAround(){
+//  
+//}
+
 /*
  * Zigzag line following with colour sensors
  */

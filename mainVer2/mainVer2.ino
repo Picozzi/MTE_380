@@ -9,8 +9,6 @@
 #include <Adafruit_Sensor.h>    // Adafruit sensor library
 #include <PID_v1.h>             // PID controller library
 
-bool testing = false; // TOGGLE THIS WHEN TESTING
-
 /*
  * Models:
  * MUX: Adafruit TCA9548A 1-to-8 I2C Multiplexer
@@ -76,6 +74,9 @@ L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B);
 Servo servoMotor;
 #define servoPin 2
 
+#define targetTimeThreshold 500     // Timer to close claws around Lego man if IR sensor doesn't work
+                                    // TESTING FOR NUMBER
+
 /*
  * --- Boolean Flags --- 
  * There will be 3 cases for the run
@@ -83,9 +84,11 @@ Servo servoMotor;
  * 2) Found Lego man, drop him off at a safe zone
  * 3) Return home to the start location
  */
-bool case1 = false;
+bool case1 = true;
 bool case2 = false;
 bool case3 = false;
+
+double timer;
 
 /*
  * Since the MUX only allows 1 IC2 device to be read at one instance, 
@@ -177,65 +180,129 @@ void setup() {
  * Main loop
  */
 void loop(void) {
-  
-  // Testing
-//  uint16_t leftMotorSpeed = standardMotorSpeed + 5;
-  
-//  followRedLine(colourLeft, colourRight, leftMotorSpeed);
-
   // --- RUN ---
-//  motors.setSpeed(standardMotorSpeed);
-//  motors.forward();
-//  
-//  // Sensor 1
-//  uint16_t r1, g1, b1, clear1;//, lux1;
-//  colourRight.getRawData(&r1, &g1, &b1, &clear1);
-//
-// // Sensor 2
-//  uint16_t r2, g2, b2, clear2;//, lux2;
-//  colourLeft.getRawData(&r2, &g2, &b2, &clear2);
-//
-//  selectMuxPin(colourRightAddress);
-//  while (foundRed(colourRight)){ // NOTE: DEFINE CONSTANTS FOR THESE COLOUR RANGES
-//    // Shift leftwards
-//       motors.stopA();
-//       Serial.println("Stop A");
-//  } 
-//
-//  selectMuxPin(colourLeftAddress);
-//  while (foundRed(colourLeft)){
-//    // Shift rightwards
-//       motors.stopB();
-//       Serial.println("Stop B");
-//  }
-//
-//  if (getIRDist() < 15){ // WHY DO WE NEED DELAYS?
-//    servoMotor.write(10);
-//    delay(500);
-//    servoMotor.write(180);
-//    delay(500);
-//  }
+  if (case1)
+  {
+    // Case 1: follow line to find Lego man at target
+    motors.setSpeedB(baseSpeedMotorB);
+    motors.setSpeedA(baseSpeedMotorA);
+    motors.forward();
 
-  // blue statement - bool -- while poll IR 
+    // Red line following code
+    // CALL FINAL ALGO THAT WORKS
 
-  // --- IMU sensor ---
-//  readIMU();
+    // Check if found blue for target
+    selectMuxPin(colourLeftAddress);
+    if (foundBlue(colourLeft))
+    {
+      blueLeft = true;
+//      motors.stop(); // For testing
+      // ADD IN CODE FOR TURNING OTHER WHEEL
+    }
+    
+    selectMuxPin(colourRightAddress);
+    if (foundBlue(colourRight))
+    {
+      blueRight = true;
+//      motors.stop(); // For testing
+      // ADD IN CODE FOR TURNING OTHER WHEEL
+    }
+
+    // Check robot is facing center of target - if so, correct orientation
+    if (blueLeft && blueRight)
+    {      
+      timer = millis();
+      
+      // slow drive until IR sensor sees Lego man
+      motors.setSpeedB(baseSpeedMotorB - 20); // Testing for speed
+      motors.setSpeedA(baseSpeedMotorA - 20); // ^
+
+      // Pause line following to find inner red ring of target
+      // Theoretically, only one colour sensor is enough of an indicator b/c the other should also be on top
+      // MAY NOT WORK IF SEES RED LINE INSTEAD
+      selectMuxPin(colourLeftAddress);
+      if (foundRed(colourLeft))
+      {
+        redLeft = true;
+      }
+
+      // If IR sensor sees Lego man or timed threshold is reached
+      if ((getIRDist() < irLegoThreshold || redLeft) || (millis() - timer) > targetTimeThreshold) // NOT SURE IF WANT TO INCLUDE THE RED COLOUR CHECK, HENCE "OR"
+      {
+        motors.stop();
+        closeClaw(); // Grip man
+
+        // Reset R/L colour sensor flags 
+        redRight = false;
+        redLeft = false;
+        blueRight = false;
+        blueLeft = false;
+        greenRight = false;
+        greenLeft = false;
+
+        case1 = false;
+        case2 = true;
+        return; // in final version
+      }     
+    }
+  }
+  else if (case2)
+  {
+    // Case 2: picked-up Lego man, find safe zone to drop off
+    // USE IF WE WANTED TO DROP MAN OFF AT SAFE ZONE
+    // OTHERWISE COMMENT OUT AND DIRECTLY USE CASE 3
+    servoMotor.write(180); // Just in case, redundant could to hold Lego man
+
+    // Look for safe zone (green) while following red line
+    motors.setSpeedB(baseSpeedMotorB);
+    motors.setSpeedA(baseSpeedMotorA);
+    motors.forward();
+
+    // Red line following code
+    // CALL FINAL ALGO THAT WORKS
+
+    // Check if found green for safe zone
+    selectMuxPin(colourLeftAddress);
+    if (foundGreen(colourLeft))
+    {
+      greenLeft = true;
+//      motors.stop(); // For testing
+      // ADD IN CODE FOR TURNING OTHER WHEEL
+    }
+    
+    selectMuxPin(colourRightAddress);
+    if (foundGreen(colourRight))
+    {
+      greenRight = true;
+//      motors.stop(); // For testing
+      // ADD IN CODE FOR TURNING OTHER WHEEL
+    }
+
+    // Found safe zone on red line
+    if (greenLeft && greenRight){
+      motors.stop();
+      openClaw();
+
+      // back up robot to not kick Lego man out of place
+      timer = millis();
+      while ((millis() - timer) < 1000){
+        motors.backward();
+      }
+
+      // Turn robot around
+      // Use IMU for 180 deg
+
+      case2 = false;
+      case3 = true;
+      return;
+    }
+  }
+  else if (case3)
+  {
+    // Case 3: follow line to return home to the start location
+    
+  }
   
-  // --- IR sensor ---
-//  Serial.println("\nIR Sensor");
-//  unsigned long currIRDist = getIRDistance();
-//  testingIR();
-
-  // ALGORITHM - TBD
-//  if (currentColour1 == "blue" && currIRDist >= irLegoThreshold){
-      // Keep driving
-//      runMotors();
-//  }
-//  else {
-//    // Found target circle (Lego man)
-//    // claws to pick up Lego man
-//  }
-
 //  // --- PID controller ---
 //  input = analogRead(inputPin_PID);
 //  pid.Compute();                        // PID calculation
@@ -244,145 +311,4 @@ void loop(void) {
 //  Serial.print(input);
 //  Serial.print(" ");
 //  Serial.println(output);
-
-  // --- Testing line following ---
-  lineFollowing();
-}
-
-void lineFollowing(){
-  redRight = false;
-  redLeft = false;
-  blueRight = false;
-  blueLeft = false;
-  greenRight = false;
-  greenLeft = false;
-
-  /*
-  // Colour sensor 1
-  uint16_t rR, gR, bR, clearR;//, lux1;
-  colourRight.getRawData(&rR, &gR, &bR, &clearR);
-
-  // Colour sensor 2
-  uint16_t rL, gL, bL, clearL;//, lux2;
-  colourLeft.getRawData(&rL, &gL, &bL, &clearL);
-
-  */
-  
-  /* 
-   *  make Case switch or if statements to differentiate between:
-   *  1) finding target (lego man)
-   *  2) finding safe zone
-   *  3) finding home (start)
-   */
-
-  if (testing){
-    motors.setSpeedB(standardMotorSpeed);
-    motors.setSpeedA(baseSpeedMotorA);
-    motors.forward();
-
-    selectMuxPin(colourRightAddress);
-    if (foundRed(colourRight)){
-      Serial.println("\nRight");
-      motors.stop();
-      while(1){}
-    }    
-    
-    selectMuxPin(colourLeftAddress);
-    if (foundRed(colourLeft)){
-      Serial.println("\nRight");
-      motors.stop();
-      while(1){}
-    }
-  }
-
-//  if (!foundLego){
-//    // Case 1
-//    // Chuck everything related in here    
-//  }
-
-  else {
-    // --- RUN ---
-    motors.setSpeedB(standardMotorSpeed);
-    motors.setSpeedA(baseSpeedMotorA);
-    motors.forward();
-  
-  //  // Check for target
-  //  // find blue -- place here so we don't miss it
-  //  selectMuxPin(colourLeftAddress);
-  //  if (foundBlue(colourLeft)){ // NOTE: DEFINE CONSTANTS FOR THESE COLOUR RANGES
-  //    blueLeft = true;
-  //    motors.stop();
-  //  }
-  //  
-  //  selectMuxPin(colourRightAddress);
-  //  if (foundBlue(colourRight)){
-  //    blueRight = true;
-  //      motors.stop();
-  //  }
-  //
-
-  //  // Check robot is facing center of target
-//    if (blueLeft && blueRight){
-//      // claw algo
-//     // slow walk until ir sees it
-//      motors.setSpeed(lowestMotorSpeed);
-//      motors.forward();
-//      if (getIRDist() < irLegoThreshold){
-//          motors.stop();
-//          closeClaw();
-//        // break; // in final version
-//        while(1){
-//          // for now
-//        } 
-//      }     
-//    }
-//      else {
-//        // potentially pushing the lego man if the ir sensor doesn't work
-//        // timer to close claws and proceed with next step
-//        // break;
-//      }
-
-  // NOTE: SHARP TURNS, STOP/SLOW DOWN OTHER MOTOR
-
-    // WORKS - 7:10 PM TUES. NOV 16
-    // Shift right
-    selectMuxPin(colourLeftAddress);
-    if (!foundRed(colourLeft))
-    { // NOTE: DEFINE CONSTANTS FOR THESE COLOUR RANGES
-      selectMuxPin(colourRightAddress);
-      if (foundRed(colourRight))
-      {
-        while(foundRed(colourRight))
-        {
-          motors.setSpeedA(baseSpeedMotorA + 50);
-          motors.forward();
-//          Serial.println("Turning right");
-        }
-      }
-    }
-  
-    motors.setSpeedB(standardMotorSpeed);
-    motors.setSpeedA(baseSpeedMotorA); // seperate motorABaseSpeed and motorB
-    motors.forward();
-    
-    // Shift left
-    selectMuxPin(colourRightAddress);
-    if (!foundRed(colourRight))
-    {
-      selectMuxPin(colourLeftAddress);
-      if (foundRed(colourLeft))
-      {
-        while(foundRed(colourLeft))
-        {
-          motors.setSpeedB(standardMotorSpeed + 50);
-          motors.forward();
-//          Serial.println("Turning left");
-        }
-      }
-    }
-  
-    motors.setSpeedB(standardMotorSpeed);
-    motors.setSpeedA(baseSpeedMotorA); // seperate motorABaseSpeed and motorB
-    motors.forward();
-  }
 }
