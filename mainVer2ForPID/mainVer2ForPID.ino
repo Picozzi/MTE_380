@@ -35,7 +35,7 @@ Adafruit_TCS34725 colourLeft = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, 
 /* --- IR Proximity Sensor Defs --- */
 #define irPin A0                  // Analog input pin
 #define irModel 1080              // sensor model library uses for GP2Y0A21YK
-#define irLegoThreshold 10        // ***CHANGE THROUGH TESTING; distance threshold to find the Lego man
+#define irLegoThreshold 11        // Distance threshold to find the Lego man
 #define irStartThreshold 15   // CHANGE THROUGH TESTING
 // 5 V
 
@@ -178,18 +178,24 @@ void setup() {
 /*
  * Clean main loop for testing functions
  */
-/*
+
 void loop(void){
-//  turn180();
-  getAngleZ();
-  delay(1000);
+  dcMotorCheck();
+
+//  isRightColourSensor();
+
+//  irCheck();
+
+//  servoCheck();
+
+//  imuCheck();     // TEST THIS ONE FOR SURE ON TUESDAY
 }
-*/
+
 
 /*
    Main loop: KEEP. THIS IS THE RUN CODE
 */
-
+/*
 void loop(void) {
   //  // --- PID controller ---
   //  // In the works when line sensor comes
@@ -381,3 +387,4 @@ void loop(void) {
     // CALL FINAL ALGO THAT WORKS
   }
 }
+*/

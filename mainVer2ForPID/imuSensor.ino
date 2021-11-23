@@ -12,7 +12,7 @@ void turn180(){
   currAngle = 0;
   float angle = 0;
     
-  while(abs(angle) < 170){ // Set to 170 deg vs 180 deg b/c dc motors need buffer time
+  while(abs(angle) < 175){ // Set to 175 deg vs 180 deg b/c dc motors need buffer time
     angle = getAngleZ();
   }
 
@@ -28,7 +28,7 @@ void turn90(){
   currAngle = 0;
   float angle = 0;
     
-  while(abs(angle) < 90){
+  while(abs(angle) < 85){
     angle = getAngleZ();
   }
 
@@ -231,6 +231,7 @@ void readIMU(){
   sensors_event_t gyro;
   sensors_event_t temp;
   sensors_event_t mag;
+  selectMuxPin(imuAddress);
   imu.getEvent(&accel, &gyro, &temp, &mag);
 //
 //  Serial.print("\t\tTemperature ");

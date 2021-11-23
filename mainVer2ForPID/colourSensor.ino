@@ -20,20 +20,6 @@
  */
 
 /*
- * Prints info of colour sensor readings for the right colour sensor
- * Determines which colour sensor address is for which through testing.
- */
-void isRightColourSensor() {
-  selectMuxPin(colourRightAddress);
-  if (foundRed(colourRight)) 
-  {
-    Serial.println("\nRight");
-    motors.stop();
-    while (1) {}
-  }
-}
-
-/*
  * Reading colours to COM4
  * Used for calibration of colour sensors
  */
