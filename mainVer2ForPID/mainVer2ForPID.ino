@@ -178,7 +178,7 @@ void setup() {
 /*
  * Clean main loop for testing functions
  */
-
+/*
 void loop(void){
   dcMotorCheck();
 
@@ -190,7 +190,7 @@ void loop(void){
 
 //  imuCheck();     // TEST THIS ONE FOR SURE ON TUESDAY
 }
-
+*/
 
 /*
    Main loop: KEEP. THIS IS THE RUN CODE
