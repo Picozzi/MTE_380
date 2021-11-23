@@ -12,7 +12,7 @@ void turn180(){
   currAngle = 0;
   float angle = 0;
     
-  while(abs(angle) < 180){
+  while(abs(angle) < 170){ // Set to 170 deg vs 180 deg b/c dc motors need buffer time
     angle = getAngleZ();
   }
 
@@ -91,6 +91,7 @@ float getAngleZ(){
 /*
  * Attempt 1
  */
+/*
 void getYawAngle(){
 //  float currAngle = 0;
 
@@ -148,6 +149,7 @@ void getYawAngle(){
   Serial.print(yawAngle);
   Serial.println();
 }
+*/
 
 /* James' IMU idea
 //double prevAngVelocity;

@@ -69,6 +69,7 @@ L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B);
 /* --- Servo Motor Defs --- */
 Servo servoMotor;
 #define servoPin 2
+#define openAngle 180        // Normal state where robot drives with claws open
 
 #define targetTimeThreshold 500     // Timer to close claws around Lego man if IR sensor doesn't work
 // TESTING FOR NUMBER
@@ -161,9 +162,9 @@ void setup() {
   motors.setSpeedA(baseSpeedMotorA);
 //  motors.forward(); // for zigZag function
 
-  //  // setup servo motors
-  //  servoMotor.attach(servoPin);
-  //  servoMotor.write(160);
+  // setup servo motors
+  servoMotor.attach(servoPin);
+  servoMotor.write(openAngle);
 
   //  // PID controller
   //  input = analogRead(inputPin_PID);     // set-up PID
@@ -174,11 +175,16 @@ void setup() {
   //  pid.SetOutputLimits(0, 255);
 }
 
+/*
+ * Clean main loop for testing functions
+ */
+/*
 void loop(void){
 //  turn180();
   getAngleZ();
   delay(1000);
 }
+*/
 
 /*
    Main loop: KEEP. THIS IS THE RUN CODE
