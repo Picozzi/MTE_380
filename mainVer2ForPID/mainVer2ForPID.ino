@@ -47,13 +47,13 @@ Adafruit_ICM20948 imu;
 /* --- Motor Controller Defs --- */
 // Motor A: left
 // Motor B: right
+#define inPin1A 1                   // Digital input pin to control spin direction of Motor A
+#define inPin2A 2                   // Digital input pin to control spin direction of Motor A
 #define enablePinA 3                // PWM signal for controlling speed Motor A
-#define inPin1A 4                   // Digital input pin to control spin direction of Motor A
-#define inPin2A 5                   // Digital input pin to control spin direction of Motor A
 
+#define inPin1B 4                   // Digital input pin to control spin direction of Motor B
+#define inPin2B 5                   // Digital input pin to control spin direction of Motor B
 #define enablePinB 6                // PWM signal for controlling speed Motor B
-#define inPin1B 7                   // Digital input pin to control spin direction of Motor B
-#define inPin2B 8                   // Digital input pin to control spin direction of Motor B
 
 // FINALIZE THESE ONCE TESTING IS COMPLETE
 #define lowestMotorSpeed 150        // Lowest motor driving speed
@@ -68,7 +68,7 @@ L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B);
 
 /* --- Servo Motor Defs --- */
 Servo servoMotor;
-#define servoPin 2
+#define servoPin 0
 #define openAngle 180        // Normal state where robot drives with claws open
 
 #define targetTimeThreshold 500     // Timer to close claws around Lego man if IR sensor doesn't work
@@ -178,19 +178,19 @@ void setup() {
 /*
  * Clean main loop for testing functions
  */
-/*
+
 void loop(void){
-  dcMotorCheck();
+//  dcMotorCheck();
 
 //  isRightColourSensor();
 
 //  irCheck();
 
-//  servoCheck();
+  servoCheck();
 
 //  imuCheck();     // TEST THIS ONE FOR SURE ON TUESDAY
 }
-*/
+
 
 /*
    Main loop: KEEP. THIS IS THE RUN CODE
