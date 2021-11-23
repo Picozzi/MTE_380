@@ -7,6 +7,7 @@
 #include <Adafruit_ICM20X.h>    // IMU library
 #include <Adafruit_ICM20948.h>  // IMU specific model library
 #include <Adafruit_Sensor.h>    // Adafruit sensor library
+#include <math.h>               // Math library for M_PI constant
 #include <PID_v1.h>             // PID controller library
 
 /*
@@ -43,9 +44,10 @@ SharpIR SharpIR(irPin, irModel); // RENAME TO irSensor
 /* --- IMU Sensor Defs --- */
 Adafruit_ICM20948 imu;
 
-double prevAngVelocity;
-double prevAngle;
-double prevTime;
+// James' IMU idea
+//double prevAngVelocity;
+//double prevAngle;
+//double prevTime;
 double angPosition = 0;
 
 /* --- Motor Controller Defs --- */
@@ -157,13 +159,13 @@ void setup() {
     Serial.println("IMU sensor was not found.");
   }
 
-  imu.setAccelRange(ICM20948_ACCEL_RANGE_16_G);
-  imu.setGyroRange(ICM20948_GYRO_RANGE_2000_DPS);
+  imu.setAccelRange(ICM20948_ACCEL_RANGE_8_G);
+  imu.setGyroRange(ICM20948_GYRO_RANGE_1000_DPS);
 
   // setup DC motors (front wheels)
   motors.setSpeedB(baseSpeedMotorB);
   motors.setSpeedA(baseSpeedMotorA);
-  motors.forward(); // for zigZag function
+//  motors.forward(); // for zigZag function
 
   //  // setup servo motors
   //  servoMotor.attach(servoPin);
@@ -178,9 +180,16 @@ void setup() {
   //  pid.SetOutputLimits(0, 255);
 }
 
+void loop(void){
+//  turn180();
+  getAngleZ();
+  delay(1000);
+}
+
 /*
    Main loop
 */
+/*
 void loop(void) {
   //  // --- PID controller ---
   //  // In the works when line sensor comes
@@ -366,3 +375,4 @@ void loop(void) {
     // CALL FINAL ALGO THAT WORKS
   }
 }
+*/
