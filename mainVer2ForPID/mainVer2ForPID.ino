@@ -36,19 +36,13 @@ Adafruit_TCS34725 colourLeft = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, 
 #define irPin A0                  // Analog input pin
 #define irModel 1080              // sensor model library uses for GP2Y0A21YK
 #define irLegoThreshold 10        // ***CHANGE THROUGH TESTING; distance threshold to find the Lego man
-#define irStarThreshold 15   // CHANGE THROUGH TESTING
+#define irStartThreshold 15   // CHANGE THROUGH TESTING
 // 5 V
 
 SharpIR SharpIR(irPin, irModel); // RENAME TO irSensor
 
 /* --- IMU Sensor Defs --- */
 Adafruit_ICM20948 imu;
-
-// James' IMU idea
-//double prevAngVelocity;
-//double prevAngle;
-//double prevTime;
-double angPosition = 0;
 
 /* --- Motor Controller Defs --- */
 // Motor A: left
@@ -189,7 +183,7 @@ void loop(void){
 /*
    Main loop: KEEP. THIS IS THE RUN CODE
 */
-/*
+
 void loop(void) {
   //  // --- PID controller ---
   //  // In the works when line sensor comes
@@ -314,6 +308,10 @@ void loop(void) {
 
       // Turn robot around
       // Use IMU for 180 deg
+      motors.backwardA(); // Left wheel turns backward
+      motors.forwardB();  // Right wheel turns forward
+      turn180();
+      motors.stop();
 
       case2 = false;
       case4 = true;
@@ -337,7 +335,9 @@ void loop(void) {
     // Use IMU for 180 deg; if condition
     motors.backwardA(); // Left wheel turns backward
     motors.forwardB();  // Right wheel turns forward
-
+    turn180();
+    motors.stop();
+    
     case3 = false;
     case4 = true;
     return;
@@ -375,4 +375,3 @@ void loop(void) {
     // CALL FINAL ALGO THAT WORKS
   }
 }
-*/
