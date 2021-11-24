@@ -129,8 +129,6 @@ void setup() {
   Wire.begin();
 
   Serial.println("\nSTART");
-  I2c.begin();
-  I2c.scan();
 
 //  // Setup colour sensors
 //  selectMuxPin(colourLeftAddress);
@@ -191,15 +189,8 @@ void loop(void){
 
 //  isRightColourSensor();
 
-//  Serial.println("In loop");
-//  readingColours(); // MATTHEW
-//
-//  selectMuxPin(colourRightAddress);
-//  foundBlue(colourRight);
-//
-//  selectMuxPin(colourRightAddress);
-//  foundRed(colourRight);
-
+  readingColours();
+  
 //  irCheck();
 
 //  servoCheck();

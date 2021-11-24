@@ -25,13 +25,13 @@
  */
 void readingColours(){
   uint16_t rR, gR, bR, clearR;
-  selectMuxPin(colourRightAddress);
+//  selectMuxPin(colourRightAddress);
   colourRight.getRawData(&rR, &gR, &bR, &clearR);
   Serial.println("\nRight");
   printColourInfo(rR, gR, bR, clearR);
 
   uint16_t rL, gL, bL, clearL;
-  selectMuxPin(colourLeftAddress);
+//  selectMuxPin(colourLeftAddress);
   colourLeft.getRawData(&rL, &gL, &bL, &clearL);
   Serial.println("\nLeft");
   printColourInfo(rL, gL, bL, clearL);  

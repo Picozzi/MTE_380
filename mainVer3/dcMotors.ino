@@ -7,6 +7,7 @@ void resetMotorsSpeed(){
 }
 
 void pickUpLegoMan(){
+  motors.forward();
    // If IR sensor sees Lego man or timed threshold is reached
 //  if ((getIRDist() < irLegoThreshold || redLeft) || (millis() - timer) > targetTimeThreshold) // NOT SURE IF WANT TO INCLUDE THE RED COLOUR CHECK, HENCE "OR"
   if (getIRDist() < irLegoThreshold) // NOT SURE IF WANT TO INCLUDE THE RED COLOUR CHECK, HENCE "OR"

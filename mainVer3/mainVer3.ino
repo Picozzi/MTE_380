@@ -23,8 +23,8 @@
 /* --- MUX Defs --- */
 #define muxAddress 0x70           // Multiplexer address for I2C
 #define colourRightAddress 0
-#define colourLeftAddress 5
-#define imuAddress 3
+#define colourLeftAddress 1
+#define imuAddress 2
 // 5 V
 
 /* --- Colour Sensor Defs --- */
@@ -59,7 +59,7 @@ Adafruit_ICM20948 imu;
 #define lowestMotorSpeed 150        // Lowest motor driving speed
 #define standardMotorSpeed 150      // Standard motor driving speed
 
-uint16_t baseSpeedMotorB = 150 + 10;                          // Base motor B driving speed
+uint16_t baseSpeedMotorB = 150 + 10;    // Base motor B driving speed
 uint16_t baseSpeedMotorA = 150;         // Base motor A driving speed
 
 // motor A: left - bad (offset by 70)
@@ -69,7 +69,8 @@ L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B);
 /* --- Servo Motor Defs --- */
 Servo servoMotor;
 #define servoPin 2
-#define openAngle 180        // Normal state where robot drives with claws open
+#define openAngle 135        // Normal state where robot drives with claws open
+#define closeAngle 55
 
 #define targetTimeThreshold 500     // Timer to close claws around Lego man if IR sensor doesn't work
 // TESTING FOR NUMBER
@@ -124,21 +125,20 @@ bool greenLeft = false;
 void setup() {
   Serial.begin(9600);
 
-//  Wire.begin();
+  Wire.begin();
 
   Serial.println("\nSTART");
 
-//  // Setup colour sensors
-//  selectMuxPin(colourLeftAddress);
-//  if (colourLeft.begin()) {
-//    Serial.println("Found left colour sensor!");
-//  }
-//  else {
-//    Serial.println("Left colour sensor was not found.");
-//  }
+  // Setup colour sensors
+  selectMuxPin(colourLeftAddress);
+  if (colourLeft.begin()) {
+    Serial.println("Found left colour sensor!");
+  }
+  else {
+    Serial.println("Left colour sensor was not found.");
+  }
 
   selectMuxPin(colourRightAddress);
-//  Serial.print("hi");
   if (colourRight.begin()) {
     Serial.println("Found right colour sensor!");
   }
@@ -146,28 +146,26 @@ void setup() {
     Serial.println("Right colour sensor was not found.");
   }
 
-  Serial.println("Mid setup");
+  // setup IMU
+  selectMuxPin(imuAddress);
+  if (imu.begin_I2C()) {
+    Serial.println("Found IMU sensor!");
+  }
+  else {
+    Serial.println("IMU sensor was not found.");
+  }
 
-//  // setup IMU
-//  selectMuxPin(imuAddress);
-//  if (imu.begin_I2C()) {
-//    Serial.println("Found IMU sensor!");
-//  }
-//  else {
-//    Serial.println("IMU sensor was not found.");
-//  }
-//
-//  imu.setAccelRange(ICM20948_ACCEL_RANGE_8_G);
-//  imu.setGyroRange(ICM20948_GYRO_RANGE_1000_DPS);
+  imu.setAccelRange(ICM20948_ACCEL_RANGE_8_G);
+  imu.setGyroRange(ICM20948_GYRO_RANGE_1000_DPS);
 
   // setup DC motors (front wheels)
   motors.setSpeedB(baseSpeedMotorB);
   motors.setSpeedA(baseSpeedMotorA);
 //  motors.forward(); // for zigZag function
 
-//  // setup servo motors
-//  servoMotor.attach(servoPin);
-//  servoMotor.write(openAngle);
+  // setup servo motors
+  servoMotor.attach(servoPin);
+  servoMotor.write(openAngle);
 
   //  // PID controller
   //  input = analogRead(inputPin_PID);     // set-up PID
@@ -187,18 +185,11 @@ void loop(void){
 
 //  isRightColourSensor();
 
-  Serial.println("In loop");
-  readingColours(); // MATTHEW
-//
-//  selectMuxPin(colourRightAddress);
-//  foundBlue(colourRight);
-//
-//  selectMuxPin(colourRightAddress);
-//  foundRed(colourRight);
+//  readingColours();
 
 //  irCheck();
 
-//  servoCheck();
+  servoCheck();
 
 //  imuCheck();
 

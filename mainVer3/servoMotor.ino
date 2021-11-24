@@ -16,24 +16,26 @@
  * Close claw gripper
  */
 void closeClaw(){
-  for(int i = 180; i > 100; i--)
+  for(int i = 135; i > 55; i--)
   {
     servoMotor.write(i);
     delay(15);
   }
 
-  while(1){}
+  servoMotor.write(55);
 }
 
 /*
  * Open claw gripper
  */
 void openClaw(){
-  for(int i = 10; i < 180; i++)
+  for(int i = 55; i < 135; i++)
   {
     servoMotor.write(i);
     delay(15);
   } 
+
+  servoMotor.write(135);
 }
 
 /*

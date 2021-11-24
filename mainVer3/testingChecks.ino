@@ -4,9 +4,9 @@
  * Checking DC motors
  */
 void dcMotorCheck(){
-//  motors.setSpeedB(baseSpeedMotorB);
-//  motors.setSpeedA(baseSpeedMotorA);
-  motors.setSpeed(120);
+  motors.setSpeedB(baseSpeedMotorB);
+  motors.setSpeedA(baseSpeedMotorA);
+//  motors.setSpeed(120);
   motors.forward();
 }
 
