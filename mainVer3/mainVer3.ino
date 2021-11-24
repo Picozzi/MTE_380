@@ -9,6 +9,7 @@
 #include <Adafruit_Sensor.h>    // Adafruit sensor library
 #include <math.h>               // Math library for M_PI constant
 #include <PID_v1.h>             // PID controller library
+#include <QTRSensors.h>         // Line reflectance sensor library
 
 /*
    Models:
@@ -47,20 +48,20 @@ Adafruit_ICM20948 imu;
 /* --- Motor Controller Defs --- */
 // Motor A: left
 // Motor B: right
-#define inPin1A 1                   // Digital input pin to control spin direction of Motor A
-#define inPin2A 2                   // Digital input pin to control spin direction of Motor A
 #define enablePinA 3                // PWM signal for controlling speed Motor A
+#define inPin1A 4                   // Digital input pin to control spin direction of Motor A
+#define inPin2A 5                   // Digital input pin to control spin direction of Motor A
 
-#define inPin1B 4                   // Digital input pin to control spin direction of Motor B
-#define inPin2B 5                   // Digital input pin to control spin direction of Motor B
 #define enablePinB 6                // PWM signal for controlling speed Motor B
+#define inPin1B 7                   // Digital input pin to control spin direction of Motor B
+#define inPin2B 8                   // Digital input pin to control spin direction of Motor B
 
 // FINALIZE THESE ONCE TESTING IS COMPLETE
 #define lowestMotorSpeed 150        // Lowest motor driving speed
 #define standardMotorSpeed 150      // Standard motor driving speed
 
-uint16_t baseSpeedMotorB = 140;                          // Base motor B driving speed
-uint16_t baseSpeedMotorA = baseSpeedMotorB + 10;         // Base motor A driving speed
+uint16_t baseSpeedMotorA = 150;                          // Base motor B driving speed
+uint16_t baseSpeedMotorB = baseSpeedMotorA + 19;         // Base motor A driving speed
 
 // motor A: left - bad (offset by 70)
 
@@ -68,7 +69,7 @@ L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B);
 
 /* --- Servo Motor Defs --- */
 Servo servoMotor;
-#define servoPin 0
+#define servoPin 2
 #define openAngle 180        // Normal state where robot drives with claws open
 
 #define targetTimeThreshold 500     // Timer to close claws around Lego man if IR sensor doesn't work
@@ -186,9 +187,15 @@ void loop(void){
 
 //  irCheck();
 
-  servoCheck();
+//  servoCheck();
 
-//  imuCheck();     // TEST THIS ONE FOR SURE ON TUESDAY
+//  imuCheck();
+
+  zigZagBase();
+
+  zigZag1();
+
+  zigZag2();
 }
 
 

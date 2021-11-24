@@ -4,6 +4,21 @@ float currAngle = 0;
 float newAngle = 0; // reset ref angle position each time
 
 /*
+ * Pivot just a little bit when one colour sensor sees blue in opp sensor direction
+ */
+void turn10(){
+  newAngle = 0;
+  currAngle = 0;
+  float angle = 0;
+    
+  while(abs(angle) < 10){ // Set to 175 deg vs 180 deg b/c dc motors need buffer time
+    angle = getAngleZ();
+  }
+
+  Serial.println("10 deg turn");
+}
+
+/*
  * Determines if 90 deg of angle position difference was reached
  * NOTE: In real life, probably 150 deg b/c motors have to stop
  */
@@ -12,12 +27,11 @@ void turn180(){
   currAngle = 0;
   float angle = 0;
     
-  while(abs(angle) < 175){ // Set to 175 deg vs 180 deg b/c dc motors need buffer time
+  while(abs(angle) < 170){ // Set to 175 deg vs 180 deg b/c dc motors need buffer time
     angle = getAngleZ();
   }
 
   Serial.println("180 deg turn");
-  while(1){}
 }
 
 /*
