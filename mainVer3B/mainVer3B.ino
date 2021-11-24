@@ -1,5 +1,7 @@
+#include <I2C.h>
+
 // Libraries
-#include <Wire.h>               // I2C library
+//#include <Wire.h>               // I2C library
 #include <Adafruit_TCS34725.h>  // Colour sensor library
 #include <SharpIR.h>            // IR proximity sensor library
 #include <L298NX2.h>            // DC Motor drive controller library (powers 2 motors)
@@ -124,9 +126,11 @@ bool greenLeft = false;
 void setup() {
   Serial.begin(9600);
 
-//  Wire.begin();
+  Wire.begin();
 
   Serial.println("\nSTART");
+  I2c.begin();
+  I2c.scan();
 
 //  // Setup colour sensors
 //  selectMuxPin(colourLeftAddress);
@@ -137,16 +141,16 @@ void setup() {
 //    Serial.println("Left colour sensor was not found.");
 //  }
 
-  selectMuxPin(colourRightAddress);
-//  Serial.print("hi");
-  if (colourRight.begin()) {
-    Serial.println("Found right colour sensor!");
-  }
-  else {
-    Serial.println("Right colour sensor was not found.");
-  }
-
-  Serial.println("Mid setup");
+//  selectMuxPin(colourRightAddress);
+////  Serial.print("hi");
+//  if (colourRight.begin()) {
+//    Serial.println("Found right colour sensor!");
+//  }
+//  else {
+//    Serial.println("Right colour sensor was not found.");
+//  }
+//
+//  Serial.println("Mid setup");
 
 //  // setup IMU
 //  selectMuxPin(imuAddress);
@@ -187,8 +191,8 @@ void loop(void){
 
 //  isRightColourSensor();
 
-  Serial.println("In loop");
-  readingColours(); // MATTHEW
+//  Serial.println("In loop");
+//  readingColours(); // MATTHEW
 //
 //  selectMuxPin(colourRightAddress);
 //  foundBlue(colourRight);
