@@ -36,7 +36,6 @@ Adafruit_TCS34725 colourLeft = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, 
 #define irPin A0                  // Analog input pin
 #define irModel 1080              // sensor model library uses for GP2Y0A21YK
 #define irLegoThreshold 11        // Distance threshold to find the Lego man
-#define irStartThreshold 15   // CHANGE THROUGH TESTING
 // 5 V
 
 SharpIR SharpIR(irPin, irModel); // RENAME TO irSensor
@@ -48,21 +47,24 @@ Adafruit_ICM20948 imu;
 // Motor A: left
 // Motor B: right
 #define enablePinA 3               // PWM signal for controlling speed Motor A
-#define inPin1A 4                   // Digital input pin to control spin direction of Motor A
-#define inPin2A 5                 // Digital input pin to control spin direction of Motor A
+#define inPin1A 4                  // Digital input pin to control spin direction of Motor A
+#define inPin2A 5                  // Digital input pin to control spin direction of Motor A
 
 #define enablePinB 6                // PWM signal for controlling speed Motor B
 #define inPin1B 7                   // Digital input pin to control spin direction of Motor B
 #define inPin2B 8                   // Digital input pin to control spin direction of Motor B
 
-// FINALIZE THESE ONCE TESTING IS COMPLETE
 #define lowestMotorSpeed 150        // Lowest motor driving speed
 #define standardMotorSpeed 150      // Standard motor driving speed
 
-uint16_t baseSpeedMotorB = 150 + 10;    // Base motor B driving speed
-uint16_t baseSpeedMotorA = 150;         // Base motor A driving speed
+#define motorLAMaxSpeed 255         // Left Motor A Max Speed
+#define motorRBMaxSpeed 255         // Right Motor B Max Speed
+uint16_t baseSpeedMotorB = 60;      // Base motor B driving speed
+uint16_t baseSpeedMotorA = 60;      // Base motor A driving speed
 
-// motor A: left - bad (offset by 70)
+#define baseRed 470
+#define KP 2.1
+#define KD 0.85
 
 L298NX2 motors(enablePinA, inPin1A, inPin2A, enablePinB, inPin1B, inPin2B);
 
@@ -73,20 +75,17 @@ Servo servoMotor;
 #define closeAngle 55
 
 #define targetTimeThreshold 500     // Timer to close claws around Lego man if IR sensor doesn't work
-// TESTING FOR NUMBER
 
 /*
    --- Boolean Flags ---
    There will be 3 cases for the run
    1) Searching for Lego man
-   2) Found Lego man, drop him off at a safe zone
-   3) Turn around to go home
-   4) Return home to the start location
+   2) Found Lego man, turn around to go home
+   3) Return home to the start location
 */
 bool case1 = true;
 bool case2 = false;
 bool case3 = false;
-bool case4 = false;
 
 double timer;
 
@@ -118,6 +117,10 @@ bool greenLeft = false;
   double Kd = 1;
   PID pid(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
 */
+
+int lastError = 0;
+int derivative;
+int integral;
 
 /*
    Setup function
@@ -179,9 +182,10 @@ void setup() {
 /*
  * Clean main loop for testing functions
  */
-
-void loop(void){
+void initTesting(){
 //  dcMotorCheck();
+
+//  motors.forward();
 
 //  isRightColourSensor();
 
@@ -189,7 +193,7 @@ void loop(void){
 
 //  irCheck();
 
-  servoCheck();
+//  servoCheck();
 
 //  imuCheck();
 
@@ -202,11 +206,9 @@ void loop(void){
 //  zigZag2(); // New one
 }
 
-
 /*
    Main loop: KEEP. THIS IS THE RUN CODE
 */
-/*
 void loop(void) {
   //  // --- PID controller ---
   //  // In the works when line sensor comes
@@ -217,59 +219,66 @@ void loop(void) {
   //  Serial.print(input);
   //  Serial.print(" ");
   //  Serial.println(output);
+
+  int error = (rL - baseRed) - (rR - baseRed);
+  error = error / 100;
+//  Serial.println(error);
+
+  int motorSpeed = KP * error + KD * (error - lastError);
+  lastError = error;
+
+  
   
   // --- RUN ---
   if (case1)
   {
     // Case 1: follow line to find Lego man at target
-    motors.setSpeedB(baseSpeedMotorB);
-    motors.setSpeedA(baseSpeedMotorA);
-    motors.forward();
+//    motors.setSpeedB(60);
+//    motors.setSpeedA(60);
+//    motors.forward();
 
     // Red line following code
-    // CALL FINAL ALGO THAT WORKS
+    int LAMotorSpeed = baseSpeedMotorA - motorSpeed; //motorA left
+    int RBMotorSpeed = baseSpeedMotorB + motorSpeed; //motorB right
+//    Serial.println(motorSpeed);
 
+    // set motor speeds using the two motor speed variables above
+    set_motors(LAMotorSpeed, RBMotorSpeed);
+    
     // Check if found blue for target
     selectMuxPin(colourLeftAddress);
     if (foundBlue(colourLeft))
     {
       blueLeft = true;
-      //      motors.stop(); // For testing
-      // ADD IN CODE FOR TURNING OTHER WHEEL
+      motors.stop(); // For testing
     }
 
     selectMuxPin(colourRightAddress);
     if (foundBlue(colourRight))
     {
       blueRight = true;
-      //      motors.stop(); // For testing
-      // ADD IN CODE FOR TURNING OTHER WHEEL
+      motors.stop(); // For testing
     }
 
     // Check robot is facing center of target - if so, correct orientation
-    if (blueLeft && blueRight)
+    if (blueLeft || blueRight) // initially wanted &&
     {
       timer = millis();
 
-      // slow drive until IR sensor sees Lego man
-      motors.setSpeedB(baseSpeedMotorB - 20); // Testing for speed
-      motors.setSpeedA(baseSpeedMotorA - 20); // ^
-
-      // Pause line following to find inner red ring of target
-      // Theoretically, only one colour sensor is enough of an indicator b/c the other should also be on top
-      // MAY NOT WORK IF SEES RED LINE INSTEAD
-      selectMuxPin(colourLeftAddress);
-      if (foundRed(colourLeft))
-      {
-        redLeft = true;
-      }
+//      // Pause line following to find inner red ring of target
+//      // Theoretically, only one colour sensor is enough of an indicator b/c the other should also be on top
+//      selectMuxPin(colourLeftAddress);
+//      if (foundRed(colourLeft))
+//      {
+//        redLeft = true;
+//      }
 
       // If IR sensor sees Lego man or timed threshold is reached
-      if ((getIRDist() < irLegoThreshold || redLeft) || (millis() - timer) > targetTimeThreshold) // NOT SURE IF WANT TO INCLUDE THE RED COLOUR CHECK, HENCE "OR"
+      if ((getIRDist() < irLegoThreshold) || (millis() - timer) > targetTimeThreshold)
       {
         motors.stop();
         closeClaw(); // Grip man
-
+        
         // Reset R/L colour sensor flags
         redRight = false;
         redLeft = false;
@@ -279,80 +288,22 @@ void loop(void) {
         greenLeft = false;
 
         case1 = false;
-        case3 = true;
-        //        case2 = true; // DROPPING OFF AT GREEN SAFE ZONE
+        case2 = true;
         return; // in final version
       }
     }
   }
   else if (case2)
   {
-    // Case 2: picked-up Lego man, find safe zone to drop off
-    // Contains turn around (Case 3)
-    // USE IF WE WANTED TO DROP MAN OFF AT SAFE ZONE
-    // OTHERWISE COMMENT OUT AND DIRECTLY USE CASE 3
-    servoMotor.write(180); // Just in case, redundant could to hold Lego man
-
-    // Look for safe zone (green) while following red line
-    motors.setSpeedB(baseSpeedMotorB);
-    motors.setSpeedA(baseSpeedMotorA);
-    motors.forward();
-
-    // Red line following code
-    // CALL FINAL ALGO THAT WORKS
-
-    // Check if found green for safe zone
-    selectMuxPin(colourLeftAddress);
-    if (foundGreen(colourLeft))
-    {
-      greenLeft = true;
-      //      motors.stop(); // For testing
-      // ADD IN CODE FOR TURNING OTHER WHEEL
-    }
-
-    selectMuxPin(colourRightAddress);
-    if (foundGreen(colourRight))
-    {
-      greenRight = true;
-      //      motors.stop(); // For testing
-      // ADD IN CODE FOR TURNING OTHER WHEEL
-    }
-
-    // Found safe zone on red line
-    if (greenLeft && greenRight) {
-      motors.stop();
-      openClaw();
-
-      // back up robot to not kick Lego man out of place
-      timer = millis();
-      while ((millis() - timer) < 1000) {
-        motors.backward();
-      }
-
-      // Turn robot around
-      // Use IMU for 180 deg
-      motors.backwardA(); // Left wheel turns backward
-      motors.forwardB();  // Right wheel turns forward
-      turn180();
-      motors.stop();
-
-      case2 = false;
-      case4 = true;
-      return;
-    }
-  }
-  else if (case3)
-  {
-    // Case 3: turn robot around to return to start location
-    // IF NOT USING CASE 2, THEN USE DIRECTLY USE CASE 3
-
+    // Case 2: picked-up Lego man and turn robot around to return to start location
+    servoMotor.write(40); // Just in case, redundant could to hold Lego man
     motors.stop();
 
     // back up robot to avoid misinterpreting red inner ring of target as red line
-    timer = millis();
-    while ((millis() - timer) < 1000) {
-      motors.backward();
-    }
+//    timer = millis();
+//    while ((millis() - timer) < 500) {
+//      motors.backward();
+//    }
 
     // Turn robot around
     // Use IMU for 180 deg; if condition
@@ -361,41 +312,47 @@ void loop(void) {
     turn180();
     motors.stop();
     
-    case3 = false;
-    case4 = true;
+    case2 = false;
+    case3 = true;
     return;
   }
-  else if (case4) {
-    // Case 4: follow line to return home to the start location
-    motors.setSpeedB(baseSpeedMotorB);
-    motors.setSpeedA(baseSpeedMotorA);
-    motors.forward();
+  else if (case3) {
+    // Case 3: follow line to return home to the start location
+//    motors.setSpeedB(baseSpeedMotorB);
+//    motors.setSpeedA(baseSpeedMotorA);
+//    motors.forward();
+
+    // Red line following code
+    int LAMotorSpeed = baseSpeedMotorA - motorSpeed; //motorA left
+    int RBMotorSpeed = baseSpeedMotorB + motorSpeed; //motorB right
+//    Serial.println(motorSpeed);
+
+    // set motor speeds using the two motor speed variables above
+    set_motors(LAMotorSpeed, RBMotorSpeed);
     
     // Found red horizontal start line
     if (redLeft && redRight){
       motors.stop();
       openClaw();
+      Serial.println("DONE");
       while(1){}  // DONE
       return;
     }
+
+    // Red line following code
+    // CALL FINAL ALGO THAT WORKS
     
     // Check if found red horizontal start line for both colour sensors
     selectMuxPin(colourLeftAddress);
     if (foundRed(colourLeft))
     {
       redLeft = true;
-      //      motors.stop(); // For testing
     }
 
     selectMuxPin(colourRightAddress);
     if (foundRed(colourRight))
     {
       redRight = true;
-      //      motors.stop(); // For testing
     }
-
-    // Red line following code
-    // CALL FINAL ALGO THAT WORKS
   }
 }
-*/

@@ -24,14 +24,14 @@
  * Used for calibration of colour sensors
  */
 void readingColours(){
-  uint16_t rR, gR, bR, clearR;
-  selectMuxPin(colourRightAddress);
-  colourRight.getRawData(&rR, &gR, &bR, &clearR);
-  Serial.println("\nRight");
-  printColourInfo(rR, gR, bR, clearR);
+//  uint16_t rR, gR, bR, clearR;
+//  selectMuxPin(colourRightAddress);
+//  colourRight.getRawData(&rR, &gR, &bR, &clearR);
+//  Serial.println("\nRight");
+//  printColourInfo(rR, gR, bR, clearR);
 
   uint16_t rL, gL, bL, clearL;
-  selectMuxPin(colourLeftAddress);
+//  selectMuxPin(colourLeftAddress);
   colourLeft.getRawData(&rL, &gL, &bL, &clearL);
   Serial.println("\nLeft");
   printColourInfo(rL, gL, bL, clearL);  
@@ -54,7 +54,7 @@ bool foundRed(Adafruit_TCS34725 colourSensor) {
   //  if ((r >= 2000) && (g < 1000) && (b < 1000)) { // night 11/18/2021 6:42 PM cardboard
   //  if ((r >= 1000)) { // night 11/19/2021 - quick and dirty 
 //  if (r >= 2000){ // afternoon 11/21/2021 3:45 PM - quick and dirty
-  if (r >= 1800 && b < 1000 && g < 1000){ // 11/23/2021 night - quick and dirty
+  if (r > 3000){ // 11/23/2021 night - quick and dirty
     Serial.print("\nFOUND RED.");
     return true;
   }
@@ -74,7 +74,7 @@ bool foundBlue(Adafruit_TCS34725 colourSensor) {
   //  if ((r < 200) && (g < 400) && (b >= 500)){ // at night 11/10/2021 8:07 PM
   //  if ((r < 600) && (g < 1400) && (b >= 2000)) { // at night 11/19/2021 6:43 PM
 //  if (b >= 2000){ // afternoon 11/21/2021 3:45 PM - quick and dirty
-  if (b > 1500 && g < 1500 && r < 1000){ // 11/23/2021 night
+  if (b > 4000){ // 11/23/2021 night
     Serial.println("\nFOUND BLUE.");
     return true;
     // NOTE: WHEELS KEEP GOING FOR ~0.5 S AFTER .STOP()

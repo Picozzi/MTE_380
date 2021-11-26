@@ -62,7 +62,7 @@ float getAngleZ(){
   sensors_event_t gyro;
   sensors_event_t mag;
   sensors_event_t temp;
-  selectMuxPin(imuAddress);
+//  selectMuxPin(imuAddress);
   imu.getEvent(&accel, &gyro, &temp, &mag);
 
   float gyroX = gyro.gyro.x;
@@ -245,7 +245,7 @@ void readIMU(){
   sensors_event_t gyro;
   sensors_event_t temp;
   sensors_event_t mag;
-  selectMuxPin(imuAddress);
+//  selectMuxPin(imuAddress);
   imu.getEvent(&accel, &gyro, &temp, &mag);
 //
 //  Serial.print("\t\tTemperature ");

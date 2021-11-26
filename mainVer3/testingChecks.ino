@@ -4,8 +4,8 @@
  * Checking DC motors
  */
 void dcMotorCheck(){
-  motors.setSpeedB(baseSpeedMotorB);
-  motors.setSpeedA(baseSpeedMotorA);
+  motors.setSpeedB(200);
+  motors.setSpeedA(210);
 //  motors.setSpeed(120);
   motors.forward();
 }
@@ -42,7 +42,6 @@ void irCheck(){
     Serial.println("\nREACHED THRESHOLD");
     motors.stop();
     delay(2000);
-//    while(1){}
   }
 }
 
