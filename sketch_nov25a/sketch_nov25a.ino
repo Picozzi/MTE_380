@@ -20,11 +20,10 @@ uint16_t r, g, b, clear;
 uint16_t rR, gR, bR;
 uint16_t rL, gL, bL;
 
-Adafruit_TCS34725 colourRight = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X); // NOTE: CAN PROBABLY CHANGE THE INPUT PARAMS
+Adafruit_TCS34725 colourRight = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 Adafruit_TCS34725 colourLeft = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(9600);
 
   Wire.begin();
